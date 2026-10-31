@@ -1,0 +1,140 @@
+@model CampusCrew.Models.Student
+@{
+    ViewData["Title"] = "My Profile";
+    var reviews = ViewBag.Reviews as List<CampusCrew.Models.Review> ?? new List<CampusCrew.Models.Review>();
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-4">
+        <div class="row align-items-center g-3">
+            <div class="col">
+                <h2 class="mb-1">@Model.Name</h2>
+                <p class="text-muted mb-2">
+                    <i class="bi bi-mortarboard me-1"></i>Year @Model.Year @Model.Course &bull; @Model.College &bull; <i class="bi bi-geo-alt me-1"></i>@Model.Location
+                </p>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-warning text-dark"><i class="bi bi-star-fill me-1"></i>@Model.Rating.ToString("0.0")</span>
+                    <span class="small text-muted">(@reviews.Count reviews)</span>
+                    <span class="badge bg-success">
+                        <i class="bi bi-check-circle me-1"></i>@(string.IsNullOrWhiteSpace(Model.Availability) ? "Available" : Model.Availability)
+                    </span>
+                </div>
+            </div>
+            <div class="col-12 col-md-auto">
+                <a asp-action="EditProfile" class="btn btn-outline-primary btn-sm me-1"><i class="bi bi-pencil me-1"></i>Edit Profile</a>
+                <a asp-action="AddPortfolio" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Add Portfolio</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">About Me</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary">
+                    @(string.IsNullOrWhiteSpace(Model.Bio) ? "No bio provided yet." : Model.Bio)
+                </p>
+
+                <h6 class="mt-4">Skills</h6>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    @if (Model.Skills.Any())
+                    {
+                        @foreach (var skill in Model.Skills)
+                        {
+                            <span class="badge bg-primary">@skill</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-muted small">No skills added yet.</span>
+                    }
+                </div>
+
+                <h6 class="mt-4">Experience</h6>
+                <p class="text-secondary small">
+                    @(string.IsNullOrWhiteSpace(Model.Experience) ? "No experience details added." : Model.Experience)
+                </p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Reviews (@reviews.Count)</h5>
+                <span class="badge bg-warning text-dark"><i class="bi bi-star-fill me-1"></i>@Model.Rating.ToString("0.0")</span>
+            </div>
+            <div class="card-body">
+                @if (!reviews.Any())
+                {
+                    <p class="text-muted text-center py-3 mb-0 small">No reviews received yet.</p>
+                }
+                else
+                {
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var review in reviews)
+                        {
+                            <div class="border rounded p-3 bg-light">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong>@review.ReviewerName (@review.ReviewerRole)</strong>
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-star-fill me-1"></i>@review.Rating</span>
+                                </div>
+                                <small class="text-muted d-block mb-2">@review.CreatedAt.ToString("MMM dd, yyyy")</small>
+                                <p class="mb-0 small text-secondary">"@review.Comment"</p>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Portfolio Projects</h5>
+                <a asp-action="AddPortfolio" class="btn btn-sm btn-outline-primary">+ Add Project</a>
+            </div>
+            <div class="card-body">
+                @if (!Model.Portfolios.Any())
+                {
+                    <div class="text-center py-4 text-muted">
+                        <p class="small mb-2">No portfolio items added yet.</p>
+                        <a asp-action="AddPortfolio" class="btn btn-sm btn-primary">Add Your First Project</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var item in Model.Portfolios)
+                        {
+                            <div class="card border">
+                                @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" class="card-img-top" alt="@item.ProjectTitle" style="max-height: 180px; object-fit: cover;" />
+                                }
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="badge bg-secondary">@item.SkillName</span>
+                                        <small class="text-muted">@item.ProjectDate.ToString("MMM yyyy")</small>
+                                    </div>
+                                    <h6 class="card-title fw-bold mt-2 mb-1">@item.ProjectTitle</h6>
+                                    <p class="card-text text-secondary small">@item.Description</p>
+                                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                        <small class="text-muted">Role: @item.Role</small>
+                                        @if (!string.IsNullOrWhiteSpace(item.ExternalLink))
+                                        {
+                                            <a href="@item.ExternalLink" target="_blank" class="btn btn-sm btn-outline-primary py-0">View Link</a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

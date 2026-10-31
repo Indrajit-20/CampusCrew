@@ -1,0 +1,59 @@
+@model CampusCrew.ViewModels.OpportunityFilterViewModel
+@{
+    ViewData["Title"] = "Discover Opportunities";
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-briefcase me-2"></i>Campus Opportunities</h2>
+        <p class="text-muted">Explore live college projects, hackathons, and event roles looking for student leads.</p>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-bold">Search</label>
+                <input class="form-control" name="Search" value="@Model.Search" placeholder="Opportunity title, keywords..." />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-bold">Skill</label>
+                <select class="form-select" name="Skill">
+                    <option value="">All Skills</option>
+                    @foreach (var skill in Model.Skills)
+                    {
+                        <option selected="@(Model.Skill == skill)" value="@skill">@skill</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-bold">College / Location</label>
+                <input class="form-control" name="Location" value="@Model.Location" placeholder="City or College..." />
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" type="submit"><i class="bi bi-funnel me-1"></i>Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (!Model.Opportunities.Any())
+{
+    <div class="alert alert-info text-center py-4">
+        <h5>No opportunities found</h5>
+        <p class="text-muted mb-2">No opportunity matches your filter criteria right now.</p>
+        <a asp-action="Opportunities" class="btn btn-sm btn-outline-primary">Reset Filters</a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var opportunity in Model.Opportunities)
+        {
+            <div class="col-md-6 col-lg-4">
+                <partial name="_OpportunityCard" model="opportunity" />
+            </div>
+        }
+    </div>
+}

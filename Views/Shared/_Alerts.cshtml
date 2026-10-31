@@ -1,0 +1,53 @@
+@if (TempData["Success"] is string success)
+{
+    <div class="container pt-3">
+        <div class="alert alert-success alert-dismissible fade show auto-dismiss-alert" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@success
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+}
+@if (TempData["Info"] is string info)
+{
+    <div class="container pt-3">
+        <div class="alert alert-info alert-dismissible fade show auto-dismiss-alert" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i>@info
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+}
+@if (TempData["Warning"] is string warning)
+{
+    <div class="container pt-3">
+        <div class="alert alert-warning alert-dismissible fade show auto-dismiss-alert" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@warning
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="container pt-3">
+        <div class="alert alert-danger alert-dismissible fade show auto-dismiss-alert" role="alert">
+            <i class="bi bi-exclamation-octagon-fill me-2"></i>@error
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+            document.querySelectorAll(".auto-dismiss-alert").forEach(function (alertEl) {
+                if (typeof bootstrap !== 'undefined' && bootstrap.Alert) {
+                    var bsAlert = bootstrap.Alert.getOrCreateInstance(alertEl);
+                    bsAlert.close();
+                } else {
+                    alertEl.style.transition = "opacity 0.5s ease";
+                    alertEl.style.opacity = "0";
+                    setTimeout(function () { alertEl.remove(); }, 500);
+                }
+            });
+        }, 3500);
+    });
+</script>

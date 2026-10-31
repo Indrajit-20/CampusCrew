@@ -1,0 +1,91 @@
+/* CampusCrew - Basic Clean UI */
+
+body {
+    background-color: #ffffff;
+    color: #212529;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.navbar-brand {
+    color: #52734D !important;
+    font-weight: 700;
+}
+
+.nav-link {
+    color: #495057 !important;
+}
+
+.nav-link:hover {
+    color: #52734D !important;
+}
+
+/* Buttons using your green color */
+.btn-primary {
+    background-color: #52734D;
+    border-color: #52734D;
+    color: #ffffff;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #415E3C;
+    border-color: #415E3C;
+    color: #ffffff;
+}
+
+.btn-outline-primary, .btn-outline-success {
+    color: #52734D;
+    border-color: #52734D;
+}
+
+.btn-outline-primary:hover, .btn-outline-success:hover {
+    background-color: #52734D;
+    border-color: #52734D;
+    color: #ffffff;
+}
+
+/* Links */
+a {
+    color: #52734D;
+}
+
+a:hover {
+    color: #415E3C;
+}
+
+/* Standard cards */
+.card {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+}
+
+/* Simple tags */
+.skill-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+    background-color: #e9ecef;
+    color: #495057;
+    border-radius: 4px;
+    margin: 1px;
+}
+
+/* Simple Footer */
+footer {
+    background-color: #52734D;
+    color: #ffffff;
+}
+
+footer a {
+    color: #DDFFBC;
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
