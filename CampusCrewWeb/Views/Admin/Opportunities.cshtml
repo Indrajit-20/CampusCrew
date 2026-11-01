@@ -1,0 +1,89 @@
+@model IEnumerable<CampusCrew.Models.Opportunity>
+@{
+    ViewData["Title"] = "Opportunity Moderation";
+    var oppList = Model.ToList();
+    var totalApplications = oppList.Sum(o => o.Applications.Count);
+    var openCount = oppList.Count(o => o.Deadline >= DateTime.Today);
+}
+
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h2><i class="bi bi-briefcase me-2 text-danger"></i>Opportunity Moderation</h2>
+        <p class="text-muted mb-0">Review all published campus opportunities and manage listings.</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+        <div class="card  p-3 text-center">
+            <h4 class="mb-0 fw-bold">@oppList.Count</h4>
+            <small class="text-muted">Total Opportunities</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="card  p-3 text-center">
+            <h4 class="mb-0 fw-bold text-success">@openCount</h4>
+            <small class="text-muted">Active Listings</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="card  p-3 text-center">
+            <h4 class="mb-0 fw-bold text-primary">@totalApplications</h4>
+            <small class="text-muted">Total Applications</small>
+        </div>
+    </div>
+</div>
+
+<div class="card ">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Opportunity</th>
+                        <th>Organizer</th>
+                        <th>Type</th>
+                        <th>Applications</th>
+                        <th>Deadline</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var opp in oppList)
+                    {
+                        var isExpired = opp.Deadline < DateTime.Today;
+                        var orgName = opp.Organizer?.Name ?? "Campus Club";
+                        <tr>
+                            <td>
+                                <strong>@opp.Title</strong>
+                                <small class="text-muted d-block"><i class="bi bi-geo-alt me-1"></i>@opp.Location &bull; @opp.College</small>
+                            </td>
+                            <td>@orgName</td>
+                            <td>
+                                <span class="badge @(opp.OpportunityType == CampusCrew.Models.OpportunityType.Paid ? "bg-success" : (opp.OpportunityType == CampusCrew.Models.OpportunityType.Collaboration ? "bg-primary" : "bg-secondary"))">
+                                    @opp.OpportunityType
+                                </span>
+                            </td>
+                            <td><strong>@opp.Applications.Count</strong></td>
+                            <td>
+                                <span class="@(isExpired ? "text-danger" : "text-muted")">
+                                    @opp.Deadline.ToString("MMM dd, yyyy")
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a asp-controller="Home" asp-action="OpportunityDetails" asp-route-id="@opp.Id" class="btn btn-sm btn-outline-secondary me-1" target="_blank">
+                                    View
+                                </a>
+                                <form asp-action="DeleteOpportunity" asp-route-id="@opp.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete \'@opp.Title\'?');">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

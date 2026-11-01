@@ -1,0 +1,112 @@
+@model CampusCrew.ViewModels.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    int totalStudents = Model.Students.Count;
+    int totalOrganizers = Model.Users.Count(u => u.Role == CampusCrew.Models.UserRole.Organizer);
+    int totalAdmins = Model.Users.Count(u => u.Role == CampusCrew.Models.UserRole.Admin);
+    int totalUsers = Model.Users.Count;
+    int totalOpportunities = Model.Opportunities.Count;
+    int totalApplications = Model.Opportunities.Sum(o => o.Applications.Count);
+    int totalSkills = Model.Skills.Count;
+    int totalCollabs = Model.Collaborations.Count;
+    int activeAccounts = Model.Users.Count(u => u.IsActive);
+}
+
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h2><i class="bi bi-shield-check me-2 text-danger"></i>Admin Dashboard</h2>
+        <p class="text-muted mb-0">Overview of users, skills taxonomy, and campus opportunities.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a asp-action="Users" class="btn btn-outline-danger btn-sm me-1"><i class="bi bi-people me-1"></i>Users</a>
+        <a asp-action="Skills" class="btn btn-outline-danger btn-sm me-1"><i class="bi bi-tags me-1"></i>Skills</a>
+        <a asp-action="Opportunities" class="btn btn-outline-danger btn-sm"><i class="bi bi-briefcase me-1"></i>Opportunities</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card  p-3 text-center">
+            <h3 class="fw-bold mb-0 text-danger">@totalUsers</h3>
+            <small class="text-muted">Total Accounts (@activeAccounts active)</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card  p-3 text-center">
+            <h3 class="fw-bold mb-0 text-primary">@totalOpportunities</h3>
+            <small class="text-muted">Opportunities (@totalApplications applications)</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card  p-3 text-center">
+            <h3 class="fw-bold mb-0 text-success">@totalSkills</h3>
+            <small class="text-muted">Skills Registered</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card  p-3 text-center">
+            <h3 class="fw-bold mb-0 text-warning">@totalCollabs</h3>
+            <small class="text-muted">Peer Collaborations</small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card  h-100">
+            <div class="card-header bg-light">
+                <h6 class="mb-0 fw-bold">User Breakdown</h6>
+            </div>
+            <div class="card-body">
+                <p class="d-flex justify-content-between mb-2">
+                    <span>Students:</span>
+                    <strong>@totalStudents</strong>
+                </p>
+                <p class="d-flex justify-content-between mb-2">
+                    <span>Organizers:</span>
+                    <strong>@totalOrganizers</strong>
+                </p>
+                <p class="d-flex justify-content-between mb-0">
+                    <span>Admins:</span>
+                    <strong>@totalAdmins</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card  h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold">Recent Opportunities</h6>
+                <a asp-action="Opportunities" class="btn btn-sm btn-outline-danger">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Applicants</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var opp in Model.Opportunities.Take(5))
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@opp.Title</strong>
+                                        <div class="small text-muted">@opp.College</div>
+                                    </td>
+                                    <td><span class="badge bg-secondary">@opp.OpportunityType</span></td>
+                                    <td>@opp.OpportunityDate.ToString("MMM dd, yyyy")</td>
+                                    <td>@opp.Applications.Count</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

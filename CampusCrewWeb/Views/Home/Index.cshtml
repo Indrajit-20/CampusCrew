@@ -1,0 +1,108 @@
+@model CampusCrew.ViewModels.HomeIndexViewModel
+@using Microsoft.AspNetCore.Http
+@{
+    ViewData["Title"] = "Home";
+    var role = Context.Session.GetString("Role");
+    var displayName = Context.Session.GetString("DisplayName");
+}
+
+<!-- Welcome Banner -->
+<div class="p-4 p-md-5 mb-4 rounded-3 bg-light border">
+    <div class="container-fluid py-2">
+        <h1 class="display-6 fw-bold">Welcome to CampusCrew</h1>
+        <p class="col-md-8 fs-6 text-muted mb-4">
+            A student collaboration platform to find projects, join campus clubs, and build your portfolio with peers.
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-controller="Home" asp-action="Opportunities" class="btn btn-primary px-4">Browse Opportunities</a>
+            @if (string.IsNullOrEmpty(displayName))
+            {
+                <a asp-controller="Account" asp-action="Register" class="btn btn-outline-secondary px-4">Create Account</a>
+            }
+            else if (role == "Student")
+            {
+                <a asp-controller="Student" asp-action="Dashboard" class="btn btn-outline-secondary px-4">My Dashboard</a>
+            }
+            else if (role == "Organizer")
+            {
+                <a asp-controller="Organizer" asp-action="CreateOpportunity" class="btn btn-outline-secondary px-4">Post Opportunity</a>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Recent Opportunities -->
+<div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+    <div>
+        <h4 class="mb-0">Recent Opportunities</h4>
+        <small class="text-muted">Explore the latest open projects and roles.</small>
+    </div>
+    <a asp-controller="Home" asp-action="Opportunities" class="btn btn-sm btn-outline-primary">View All</a>
+</div>
+
+@if (Model.FeaturedOpportunities.Any())
+{
+    <div class="row g-3 mb-5">
+        @foreach (var opp in Model.FeaturedOpportunities)
+        {
+            <div class="col-md-6 col-lg-4">
+                <partial name="_OpportunityCard" model="opp" />
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-light text-center py-4 mb-5 border">
+        <p class="text-muted mb-0">No opportunities posted yet.</p>
+    </div>
+}
+
+<!-- Registered Students -->
+<div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+    <div>
+        <h4 class="mb-0">Students</h4>
+        <small class="text-muted">Find students to collaborate on projects.</small>
+    </div>
+    <a asp-controller="Home" asp-action="Students" class="btn btn-sm btn-outline-primary">View All</a>
+</div>
+
+<div class="row g-3 mb-4">
+    @foreach (var student in Model.FeaturedStudents)
+    {
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 ">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title h6 mb-1">
+                        <a asp-controller="Student" asp-action="StudentProfile" asp-route-id="@student.Id" class="text-decoration-none text-dark fw-bold">
+                            @student.Name
+                        </a>
+                    </h5>
+                    <div class="text-muted small mb-2">@student.Course &middot; Year @student.Year</div>
+
+                    <p class="small text-secondary flex-grow-1 mb-2">
+                        @(string.IsNullOrWhiteSpace(student.Bio) ? "Student looking to collaborate on campus projects." : (student.Bio.Length > 80 ? student.Bio.Substring(0, 80) + "..." : student.Bio))
+                    </p>
+
+                    <div class="mb-3">
+                        @if (student.Skills.Any())
+                        {
+                            @foreach (var skill in student.Skills.Take(3))
+                            {
+                                <span class="skill-tag">@skill</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted small">No skills listed</span>
+                        }
+                    </div>
+
+                    <a asp-controller="Student" asp-action="StudentProfile" asp-route-id="@student.Id" class="btn btn-sm btn-outline-primary w-100 mt-auto">
+                        View Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

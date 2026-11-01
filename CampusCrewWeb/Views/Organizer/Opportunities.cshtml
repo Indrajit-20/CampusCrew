@@ -1,0 +1,84 @@
+@model IEnumerable<CampusCrew.Models.Opportunity>
+@{
+    ViewData["Title"] = "My Opportunities";
+}
+
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-briefcase me-2 text-primary"></i>My Opportunities</h2>
+        <p class="text-muted mb-0">Opportunities posted by your organization for student collaboration.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a asp-action="CreateOpportunity" class="btn btn-primary btn-sm">+ Post New Opportunity</a>
+    </div>
+</div>
+
+<div class="card border">
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-2 d-block text-secondary mb-2"></i>
+                <p class="mb-2">You haven't posted any opportunities yet.</p>
+                <a asp-action="CreateOpportunity" class="btn btn-sm btn-primary">Post Your First Opportunity</a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Opportunity</th>
+                            <th>Type</th>
+                            <th>Event Date</th>
+                            <th>Deadline</th>
+                            <th>Applicants</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var opp in Model)
+                        {
+                            int pending = opp.Applications.Count(a => a.Status == CampusCrew.Models.StatusType.Pending);
+                            <tr>
+                                <td class="ps-3">
+                                    <strong class="text-dark">@opp.Title</strong>
+                                    <div class="small text-muted"><i class="bi bi-geo-alt me-1"></i>@opp.Location</div>
+                                </td>
+                                <td>
+                                    <span class="badge @(opp.OpportunityType == CampusCrew.Models.OpportunityType.Paid ? "bg-success" : (opp.OpportunityType == CampusCrew.Models.OpportunityType.Collaboration ? "bg-primary" : "bg-secondary"))">
+                                        @opp.OpportunityType
+                                    </span>
+                                </td>
+                                <td>@opp.OpportunityDate.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <span class="@(opp.Deadline.Date < DateTime.Today ? "text-danger" : "text-muted")">
+                                        @opp.Deadline.ToString("MMM dd, yyyy")
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">@opp.Applications.Count</span>
+                                    @if (pending > 0)
+                                    {
+                                        <span class="badge bg-warning text-dark ms-1">@pending new</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="d-inline-flex gap-1">
+                                        <a asp-controller="Home" asp-action="OpportunityDetails" asp-route-id="@opp.Id" class="btn btn-sm btn-outline-secondary">View</a>
+                                        <a asp-action="EditOpportunity" asp-route-id="@opp.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                        <a asp-action="Applicants" asp-route-id="@opp.Id" class="btn btn-sm btn-outline-info">Applicants (@opp.Applications.Count)</a>
+                                        <form asp-action="DeleteOpportunity" asp-route-id="@opp.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this opportunity? All associated applications will also be deleted.');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

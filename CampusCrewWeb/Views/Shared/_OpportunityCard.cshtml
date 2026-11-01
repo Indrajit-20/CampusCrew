@@ -1,0 +1,56 @@
+@model CampusCrew.Models.Opportunity
+@{
+    bool isDeadlinePassed = Model.Deadline.Date < DateTime.Today;
+    int daysLeft = (Model.Deadline.Date - DateTime.Today).Days;
+    var organizerName = Model.Organizer?.Name ?? "Campus Club";
+}
+
+<div class="card h-100 ">
+    <div class="card-body d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="card-title h6 mb-0">
+                <a asp-controller="Home" asp-action="OpportunityDetails" asp-route-id="@Model.Id" class="text-decoration-none text-dark fw-bold">
+                    @Model.Title
+                </a>
+            </h5>
+            <span class="badge @(Model.OpportunityType == CampusCrew.Models.OpportunityType.Paid ? "bg-success" : (Model.OpportunityType == CampusCrew.Models.OpportunityType.Collaboration ? "bg-primary" : "bg-secondary")) ms-2">
+                @Model.OpportunityType
+            </span>
+        </div>
+
+        <div class="text-muted small mb-2">
+            <span><i class="bi bi-building me-1"></i>@organizerName</span>
+            @if (!string.IsNullOrWhiteSpace(Model.Location))
+            {
+                <span class="ms-2"><i class="bi bi-geo-alt me-1"></i>@Model.Location</span>
+            }
+        </div>
+
+        <p class="card-text small text-secondary flex-grow-1 mb-2">
+            @(Model.Description.Length > 110 ? Model.Description.Substring(0, 110) + "..." : Model.Description)
+        </p>
+
+        <div class="mb-3">
+            @if (Model.OpportunitySkills.Any())
+            {
+                @foreach (var s in Model.OpportunitySkills.Take(3))
+                {
+                    <span class="skill-tag">@s.Skill?.Name</span>
+                }
+            }
+            else
+            {
+                <span class="text-muted small">No specific skills listed</span>
+            }
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-auto small">
+            <span class="@(isDeadlinePassed ? "text-danger" : "text-muted")">
+                <i class="bi bi-clock me-1"></i>@(isDeadlinePassed ? "Deadline passed" : $"{daysLeft} days left")
+            </span>
+            <a asp-controller="Home" asp-action="OpportunityDetails" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">
+                View Details
+            </a>
+        </div>
+    </div>
+</div>

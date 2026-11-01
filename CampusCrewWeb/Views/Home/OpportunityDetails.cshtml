@@ -1,0 +1,131 @@
+@model CampusCrew.Models.Opportunity
+@{
+    ViewData["Title"] = Model.Title;
+    string userRole = ViewBag.UserRole ?? "";
+    bool hasApplied = ViewBag.HasApplied ?? false;
+    var existingApp = ViewBag.ExistingApplication as CampusCrew.Models.Application;
+    bool isDeadlinePassed = ViewBag.IsDeadlinePassed ?? (Model.Deadline.Date < DateTime.Today);
+    var organizerName = Model.Organizer?.Name ?? "Campus Club";
+}
+
+<div class="mb-3">
+    <a asp-controller="Home" asp-action="Opportunities" class="text-decoration-none">&larr; Back to Opportunities</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card  mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    @if (Model.OpportunityType == CampusCrew.Models.OpportunityType.Paid)
+                    {
+                        <span class="badge bg-success fs-6"><i class="bi bi-cash-stack me-1"></i>Paid Opportunity</span>
+                    }
+                    else if (Model.OpportunityType == CampusCrew.Models.OpportunityType.Collaboration)
+                    {
+                        <span class="badge bg-primary fs-6"><i class="bi bi-people-fill me-1"></i>Collaboration</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary fs-6"><i class="bi bi-award me-1"></i>Experience</span>
+                    }
+
+                    @if (isDeadlinePassed)
+                    {
+                        <span class="badge bg-danger">Deadline Passed</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Accepting Applications</span>
+                    }
+                </div>
+
+                <h2 class="card-title fw-bold">@Model.Title</h2>
+                <p class="text-muted">
+                    <i class="bi bi-building me-1"></i><strong>@organizerName</strong> &bull; 
+                    <i class="bi bi-mortarboard me-1"></i>@Model.College &bull; 
+                    <i class="bi bi-geo-alt me-1"></i>@Model.Location
+                </p>
+
+                <hr />
+
+                <h5>Description</h5>
+                <p class="text-secondary" style="white-space: pre-line;">@Model.Description</p>
+
+                <h5 class="mt-4">Required Skills</h5>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    @foreach (var skill in Model.OpportunitySkills)
+                    {
+                        <span class="badge bg-primary p-2">@skill.Skill?.Name</span>
+                    }
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.AdditionalRequirements))
+                {
+                    <h5>Additional Requirements</h5>
+                    <p class="text-secondary">@Model.AdditionalRequirements</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card  mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Opportunity Overview</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted"><i class="bi bi-calendar-event me-1"></i>Event Date</span>
+                        <strong>@Model.OpportunityDate.ToString("MMM dd, yyyy")</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted"><i class="bi bi-clock me-1"></i>Deadline</span>
+                        <strong class="@(isDeadlinePassed ? "text-danger" : "")">@Model.Deadline.ToString("MMM dd, yyyy")</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted"><i class="bi bi-people me-1"></i>Spots</span>
+                        <strong>@Model.RequiredMembers students</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted"><i class="bi bi-building me-1"></i>Organizer</span>
+                        <strong>@organizerName</strong>
+                    </li>
+                </ul>
+
+                <div class="d-grid gap-2">
+                    @if (userRole == "Student")
+                    {
+                        if (hasApplied && existingApp != null)
+                        {
+                            <div class="alert alert-info text-center py-2 mb-2">
+                                <small class="d-block text-muted">Your Status:</small>
+                                <strong>@existingApp.Status</strong>
+                            </div>
+                            <a asp-controller="Student" asp-action="MyApplications" class="btn btn-outline-primary">View My Applications</a>
+                        }
+                        else if (isDeadlinePassed)
+                        {
+                            <button class="btn btn-secondary" disabled>Deadline Passed</button>
+                        }
+                        else
+                        {
+                            <a asp-controller="Student" asp-action="Apply" asp-route-id="@Model.Id" class="btn btn-primary btn-lg">Apply Now</a>
+                        }
+                    }
+                    else if (userRole == "Organizer")
+                    {
+                        <a asp-controller="Organizer" asp-action="Applicants" asp-route-id="@Model.Id" class="btn btn-primary">
+                            <i class="bi bi-people me-1"></i>View Applicants (@Model.Applications.Count)
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Log In as Student to Apply</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

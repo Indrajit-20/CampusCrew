@@ -1,0 +1,73 @@
+@model PortfolioViewModel
+@inject CampusCrew.Data.ApplicationDbContext DbContext
+@{
+    ViewData["Title"] = "Add Portfolio Project";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card  my-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add Portfolio Project</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="AddPortfolio" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label asp-for="ProjectTitle" class="form-label">Project Title</label>
+                            <input asp-for="ProjectTitle" class="form-control" placeholder="e.g. Annual Fest Photography" />
+                            <span asp-validation-for="ProjectTitle" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="SkillName" class="form-label">Skill</label>
+                            <select asp-for="SkillName" class="form-select">
+                                <option value="">Select a skill</option>
+                                @foreach (var skill in DbContext.Skills.OrderBy(s => s.Name))
+                                {
+                                    <option value="@skill.Name">@skill.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="SkillName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Describe what you worked on, tools used, outcomes..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ImageUrl" class="form-label">Image URL</label>
+                            <input asp-for="ImageUrl" class="form-control" placeholder="https://..." />
+                            <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ExternalLink" class="form-label">External Link (GitHub, Demo, etc.)</label>
+                            <input asp-for="ExternalLink" class="form-control" placeholder="https://..." />
+                            <span asp-validation-for="ExternalLink" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ProjectDate" class="form-label">Project Date</label>
+                            <input asp-for="ProjectDate" class="form-control" type="date" />
+                            <span asp-validation-for="ProjectDate" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Role" class="form-label">Your Role</label>
+                            <input asp-for="Role" class="form-control" placeholder="Lead Photographer, Full-stack Dev" />
+                            <span asp-validation-for="Role" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between pt-4 mt-3 border-top">
+                        <a asp-action="Profile" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Add Project</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
