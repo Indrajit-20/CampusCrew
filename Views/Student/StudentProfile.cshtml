@@ -1,29 +1,41 @@
 @model CampusCrew.Models.Student
 @{
-    ViewData["Title"] = $"{Model.Name} - Profile";
+    ViewData["Title"] = $"{Model.Name} - Student Profile";
     bool isSelf = ViewBag.IsSelf ?? false;
     string viewerRole = ViewBag.ViewerRole ?? "";
-    var reviews = ViewBag.Reviews as List<CampusCrew.Models.Review> ?? new List<CampusCrew.Models.Review>();
     var orgOpps = ViewBag.OrganizerOpportunities as List<CampusCrew.Models.Opportunity> ?? new List<CampusCrew.Models.Opportunity>();
 }
 
 <div class="mb-3">
-    <a asp-controller="Home" asp-action="Students" class="text-decoration-none">&larr; Back to Students</a>
+    <a asp-controller="Home" asp-action="Students" class="text-decoration-none text-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Student Directory
+    </a>
 </div>
 
-<div class="card shadow-sm mb-4">
+<!-- Header Card -->
+<div class="card border-0 shadow-sm mb-4">
     <div class="card-body p-4">
         <div class="row align-items-center g-3">
+            <div class="col-auto">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 64px; height: 64px; font-size: 24px;">
+                    @(string.IsNullOrEmpty(Model.Name) ? "S" : Model.Name.Substring(0, 1).ToUpper())
+                </div>
+            </div>
             <div class="col">
-                <h2 class="mb-1">@Model.Name</h2>
+                <h3 class="mb-1 fw-bold text-dark">@Model.Name</h3>
                 <p class="text-muted mb-2">
-                    <i class="bi bi-mortarboard me-1"></i>Year @Model.Year @Model.Course &bull; @Model.College &bull; <i class="bi bi-geo-alt me-1"></i>@Model.Location
+                    <span><i class="bi bi-mortarboard me-1"></i>Year @Model.Year @Model.Course</span>
+                    <span class="mx-2">&bull;</span>
+                    <span><i class="bi bi-building me-1"></i>@Model.College</span>
+                    <span class="mx-2">&bull;</span>
+                    <span><i class="bi bi-geo-alt me-1"></i>@Model.Location</span>
                 </p>
-                <div class="d-flex align-items-center gap-3">
-                    <span class="badge bg-warning text-dark"><i class="bi bi-star-fill me-1"></i>@Model.Rating.ToString("0.0")</span>
-                    <span class="small text-muted">(@Model.TotalReviews reviews)</span>
-                    <span class="badge bg-success">
-                        <i class="bi bi-check-circle me-1"></i>@(string.IsNullOrWhiteSpace(Model.Availability) ? "Available" : Model.Availability)
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light text-dark border">
+                        <i class="bi bi-clock me-1 text-primary"></i>Availability: @(string.IsNullOrWhiteSpace(Model.Availability) ? "Flexible" : Model.Availability)
+                    </span>
+                    <span class="badge bg-light text-dark border">
+                        <i class="bi bi-briefcase me-1 text-primary"></i>@Model.Portfolios.Count Project(s)
                     </span>
                 </div>
             </div>
@@ -31,7 +43,7 @@
                 @if (isSelf)
                 {
                     <a asp-action="EditProfile" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil me-1"></i>Edit Profile</a>
-                    <a asp-action="AddPortfolio" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Add Portfolio</a>
+                    <a asp-action="AddPortfolio" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Add Project</a>
                 }
                 else if (viewerRole == "Organizer")
                 {
@@ -39,7 +51,7 @@
                         <i class="bi bi-envelope me-1"></i>Invite to Opportunity
                     </button>
                     <a asp-action="RequestCollaboration" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-people me-1"></i>Collaborate
+                        <i class="bi bi-people me-1"></i>Request Collaboration
                     </a>
                 }
                 else if (viewerRole == "Student")
@@ -58,23 +70,24 @@
 </div>
 
 <div class="row g-4">
+    <!-- Left Column: Bio & Skills -->
     <div class="col-lg-7">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">About</h5>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 fw-semibold text-dark"><i class="bi bi-person me-2 text-primary"></i>About Student</h5>
             </div>
-            <div class="card-body">
-                <p class="text-secondary">
-                    @(string.IsNullOrWhiteSpace(Model.Bio) ? "Ready for student projects and collaborations." : Model.Bio)
+            <div class="card-body p-4">
+                <p class="text-secondary leading-relaxed mb-4">
+                    @(string.IsNullOrWhiteSpace(Model.Bio) ? "Ready for student projects, hackathons, and campus collaborations." : Model.Bio)
                 </p>
 
-                <h6 class="mt-4">Skills</h6>
+                <h6 class="fw-bold text-dark mb-2">Skills &amp; Expertise</h6>
                 <div class="d-flex flex-wrap gap-2 mb-3">
                     @if (Model.Skills.Any())
                     {
                         @foreach (var skill in Model.Skills)
                         {
-                            <span class="badge bg-primary">@skill</span>
+                            <span class="badge bg-light text-primary border border-primary-subtle px-3 py-2">@skill</span>
                         }
                     }
                     else
@@ -82,57 +95,52 @@
                         <span class="text-muted small">No skills listed yet.</span>
                     }
                 </div>
-
-                <h6 class="mt-4">Experience</h6>
-                <p class="text-secondary small">
-                    @(string.IsNullOrWhiteSpace(Model.Experience) ? "Active in campus teams." : Model.Experience)
-                </p>
             </div>
         </div>
 
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Reviews</h5>
-                <span class="badge bg-warning text-dark"><i class="bi bi-star-fill me-1"></i>@Model.Rating.ToString("0.0")</span>
+        <!-- Academic Information Card -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 fw-semibold text-dark"><i class="bi bi-book me-2 text-primary"></i>Academic Details</h5>
             </div>
-            <div class="card-body">
-                @if (!reviews.Any())
-                {
-                    <p class="text-muted text-center py-3 mb-0 small">No reviews yet.</p>
-                }
-                else
-                {
-                    <div class="d-flex flex-column gap-3">
-                        @foreach (var review in reviews)
-                        {
-                            <div class="border rounded p-3 bg-light">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <strong>@review.ReviewerName (@review.ReviewerRole)</strong>
-                                    <span class="badge bg-warning text-dark"><i class="bi bi-star-fill me-1"></i>@review.Rating</span>
-                                </div>
-                                <small class="text-muted d-block mb-2">@review.CreatedAt.ToString("MMM dd, yyyy")</small>
-                                <p class="mb-0 small text-secondary">"@review.Comment"</p>
-                            </div>
-                        }
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">College / University</span>
+                        <strong class="text-dark">@Model.College</strong>
                     </div>
-                }
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Course &amp; Degree</span>
+                        <strong class="text-dark">@Model.Course</strong>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Academic Year</span>
+                        <strong class="text-dark">Year @Model.Year</strong>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Campus Location</span>
+                        <strong class="text-dark">@Model.Location</strong>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Right Column: Portfolio Projects -->
     <div class="col-lg-5">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Portfolio Projects</h5>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-semibold text-dark"><i class="bi bi-folder me-2 text-primary"></i>Portfolio Projects</h5>
                 @if (isSelf)
                 {
-                    <a asp-action="AddPortfolio" class="btn btn-sm btn-outline-primary">+ Add Item</a>
+                    <a asp-action="AddPortfolio" class="btn btn-sm btn-outline-primary">+ Add Project</a>
                 }
             </div>
-            <div class="card-body">
+            <div class="card-body p-3">
                 @if (!Model.Portfolios.Any())
                 {
                     <div class="text-center py-4 text-muted small">
+                        <i class="bi bi-journal-x fs-3 d-block text-secondary mb-2"></i>
                         No portfolio projects added yet.
                     </div>
                 }
@@ -141,23 +149,19 @@
                     <div class="d-flex flex-column gap-3">
                         @foreach (var item in Model.Portfolios)
                         {
-                            <div class="card border">
-                                @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
-                                {
-                                    <img src="@item.ImageUrl" class="card-img-top" alt="@item.ProjectTitle" style="max-height: 180px; object-fit: cover;" />
-                                }
-                                <div class="card-body">
+                            <div class="card border shadow-none bg-light">
+                                <div class="card-body p-3">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span class="badge bg-secondary">@item.SkillName</span>
+                                        <span class="badge bg-primary">@item.SkillName</span>
                                         <small class="text-muted">@item.ProjectDate.ToString("MMM yyyy")</small>
                                     </div>
-                                    <h6 class="card-title fw-bold mt-2 mb-1">@item.ProjectTitle</h6>
-                                    <p class="card-text text-secondary small">@item.Description</p>
+                                    <h6 class="fw-bold mt-2 mb-1 text-dark">@item.ProjectTitle</h6>
+                                    <p class="card-text text-secondary small mb-2">@item.Description</p>
                                     <div class="d-flex justify-content-between align-items-center pt-2 border-top">
                                         <small class="text-muted">Role: @item.Role</small>
                                         @if (!string.IsNullOrWhiteSpace(item.ExternalLink))
                                         {
-                                            <a href="@item.ExternalLink" target="_blank" class="btn btn-sm btn-outline-primary py-0">View Link</a>
+                                            <a href="@item.ExternalLink" target="_blank" class="btn btn-sm btn-outline-secondary py-0">View Link</a>
                                         }
                                     </div>
                                 </div>
@@ -190,7 +194,7 @@
                         else
                         {
                             <div class="mb-3">
-                                <label class="form-label">Select Opportunity</label>
+                                <label class="form-label fw-semibold">Select Opportunity</label>
                                 <select name="opportunityId" class="form-select" required>
                                     @foreach (var opp in orgOpps)
                                     {
@@ -199,8 +203,8 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Invitation Message</label>
-                                <textarea name="message" class="form-control" rows="3" placeholder="Hi @Model.Name, we'd like you to join our crew!"></textarea>
+                                <label class="form-label fw-semibold">Invitation Message</label>
+                                <textarea name="message" class="form-control" rows="3" placeholder="Hi @Model.Name, we'd like to invite you to join our team!"></textarea>
                             </div>
                         }
                     </div>

@@ -1,0 +1,84 @@
+@model OpportunityFormViewModel
+@{
+    ViewData["Title"] = "Edit Opportunity";
+    int oppId = ViewBag.OpportunityId ?? 0;
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm my-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Edit Opportunity</h4>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="EditOpportunity" asp-route-id="@oppId" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label asp-for="Title" class="form-label fw-bold">Title</label>
+                            <input asp-for="Title" class="form-control" placeholder="e.g. Cultural Fest Photography & Media" />
+                            <span asp-validation-for="Title" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Type" class="form-label fw-bold">Type</label>
+                            <select asp-for="Type" asp-items="Html.GetEnumSelectList<OpportunityType>()" class="form-select"></select>
+                            <span asp-validation-for="Type" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label fw-bold">Description / Brief</label>
+                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Describe the event, tasks required, and what the student will work on..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="RequiredSkills" class="form-label fw-bold">Required Skills (comma-separated)</label>
+                            <input asp-for="RequiredSkills" class="form-control" placeholder="Photography, Video Editing, Graphic Design" />
+                            <small class="text-muted">Separate multiple skills with commas.</small>
+                            <span asp-validation-for="RequiredSkills" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="College" class="form-label fw-bold">College / University</label>
+                            <input asp-for="College" class="form-control" placeholder="Riverside College" />
+                            <span asp-validation-for="College" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Location" class="form-label fw-bold">Location / Venue</label>
+                            <input asp-for="Location" class="form-control" placeholder="Auditorium, Main Campus" />
+                            <span asp-validation-for="Location" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="OpportunityDate" class="form-label fw-bold">Event Date</label>
+                            <input asp-for="OpportunityDate" class="form-control" type="date" />
+                            <span asp-validation-for="OpportunityDate" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="ApplicationDeadline" class="form-label fw-bold">Application Deadline</label>
+                            <input asp-for="ApplicationDeadline" class="form-control" type="date" />
+                            <span asp-validation-for="ApplicationDeadline" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="NumberOfParticipants" class="form-label fw-bold">Spots Available</label>
+                            <input asp-for="NumberOfParticipants" class="form-control" type="number" min="1" />
+                            <span asp-validation-for="NumberOfParticipants" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="AdditionalRequirements" class="form-label fw-bold">Additional Notes / Equipment (Optional)</label>
+                            <textarea asp-for="AdditionalRequirements" class="form-control" rows="2" placeholder="e.g. Bring your own camera gear..."></textarea>
+                            <span asp-validation-for="AdditionalRequirements" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between pt-4 mt-3 border-top">
+                        <a asp-action="Opportunities" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

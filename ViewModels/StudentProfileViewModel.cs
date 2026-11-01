@@ -19,18 +19,11 @@ public class StudentProfileViewModel
     [Required, StringLength(80)]
     public string Location { get; set; } = string.Empty;
 
-    [Required, StringLength(600, MinimumLength = 30)]
+    [Required, StringLength(600, MinimumLength = 10)]
     public string Bio { get; set; } = string.Empty;
 
-    [StringLength(600)]
-    public string Experience { get; set; } = string.Empty;
-
     [Required, StringLength(80)]
-    public string Availability { get; set; } = string.Empty;
-
-    [Url, StringLength(300)]
-    [Display(Name = "Portfolio or social link")]
-    public string SocialLink { get; set; } = string.Empty;
+    public string Availability { get; set; } = "Flexible";
 
     public List<string> SelectedSkills { get; set; } = new();
 }

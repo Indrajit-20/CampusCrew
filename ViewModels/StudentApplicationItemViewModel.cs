@@ -15,6 +15,4 @@ public class StudentApplicationItemViewModel
     public string Message { get; set; } = string.Empty;
     public StatusType Status { get; set; }
     public OpportunityType OpportunityType { get; set; }
-    public bool HasReviewed { get; set; }
 }
-

@@ -1,4 +1,5 @@
 using CampusCrew.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace CampusCrew.Data;
@@ -7,12 +8,39 @@ public static class DbInitializer
 {
     public static void Initialize(ApplicationDbContext context)
     {
-        context.Database.EnsureCreated();
+        bool needsReset = false;
+        try
+        {
+            context.Database.Migrate();
+            // Verify if the current database schema matches the updated models
+            _ = context.Users.Select(u => u.PasswordHash).FirstOrDefault();
+            _ = context.Opportunities.Select(o => o.CreatedAt).FirstOrDefault();
+        }
+        catch
+        {
+            needsReset = true;
+        }
+
+        if (needsReset)
+        {
+            try
+            {
+                // Drop obsolete local database if schema was mismatched from previous version
+                context.Database.EnsureDeleted();
+                context.Database.Migrate();
+            }
+            catch
+            {
+                context.Database.EnsureCreated();
+            }
+        }
 
         if (context.Users.Any())
         {
-            return; // DB has been seeded
+            return; // DB has already been seeded
         }
+
+        var hasher = new PasswordHasher<User>();
 
         // 1. Seed Skills
         var skillNames = new[] {
@@ -24,18 +52,24 @@ public static class DbInitializer
         context.Skills.AddRange(skills);
         context.SaveChanges();
 
-        // 2. Seed Users with Real Indian Names
+        // 2. Seed Users with Hashed Passwords
         var users = new List<User>
         {
-            new User { Name = "Rohan Sharma", Email = "rohan@campuscrew.demo", Password = "Campus123", Role = UserRole.Student },
-            new User { Name = "Vikram Singh (Campus Event Head)", Email = "club@campuscrew.demo", Password = "Campus123", Role = UserRole.Organizer },
-            new User { Name = "Prof. Rajesh Kumar (Admin)", Email = "admin@campuscrew.demo", Password = "Campus123", Role = UserRole.Admin },
-            new User { Name = "Priya Patel", Email = "priya@campuscrew.demo", Password = "Campus123", Role = UserRole.Student },
-            new User { Name = "Rahul Verma", Email = "rahul@campuscrew.demo", Password = "Campus123", Role = UserRole.Student },
-            new User { Name = "Ananya Iyer", Email = "ananya@campuscrew.demo", Password = "Campus123", Role = UserRole.Student },
-            new User { Name = "Aditya Joshi", Email = "aditya@campuscrew.demo", Password = "Campus123", Role = UserRole.Student },
-            new User { Name = "Aarav Mehta", Email = "aarav@campuscrew.demo", Password = "Campus123", Role = UserRole.Student }
+            new User { Name = "Rohan Sharma", Email = "rohan@campuscrew.demo", Role = UserRole.Student },
+            new User { Name = "Vikram Singh (Campus Event Head)", Email = "club@campuscrew.demo", Role = UserRole.Organizer },
+            new User { Name = "Prof. Rajesh Kumar (Admin)", Email = "admin@campuscrew.demo", Role = UserRole.Admin },
+            new User { Name = "Priya Patel", Email = "priya@campuscrew.demo", Role = UserRole.Student },
+            new User { Name = "Rahul Verma", Email = "rahul@campuscrew.demo", Role = UserRole.Student },
+            new User { Name = "Ananya Iyer", Email = "ananya@campuscrew.demo", Role = UserRole.Student },
+            new User { Name = "Aditya Joshi", Email = "aditya@campuscrew.demo", Role = UserRole.Student },
+            new User { Name = "Aarav Mehta", Email = "aarav@campuscrew.demo", Role = UserRole.Student }
         };
+
+        foreach (var user in users)
+        {
+            user.PasswordHash = hasher.HashPassword(user, "Campus123");
+        }
+
         context.Users.AddRange(users);
         context.SaveChanges();
 
@@ -47,71 +81,91 @@ public static class DbInitializer
         var uAditya = users[6];
         var uAarav = users[7];
 
-        // 3. Seed Students (Real Indian Colleges, Courses & Locations)
+        // 3. Seed Organizer Profile
+        var orgProfile = new OrganizerProfile
+        {
+            UserId = uOrg.Id,
+            OrganizationName = "Campus Cultural & Tech Committee",
+            OrganizationType = "College Club",
+            College = "Delhi University",
+            Location = "New Delhi",
+            Description = "Official student activities council organizing intra and inter-college cultural, technical, and sports events.",
+            ContactNumber = "+91 98765 43210"
+        };
+        context.OrganizerProfiles.Add(orgProfile);
+        context.SaveChanges();
+
+        // 4. Seed Students
         var sRohan = new Student
         {
-            UserId = uRohan.Id, Name = uRohan.Name, Email = uRohan.Email,
-            College = "Delhi University", Course = "BCA", Year = 3,
+            UserId = uRohan.Id,
+            College = "Delhi University",
+            Course = "BCA",
+            Year = 3,
             Location = "New Delhi",
             Bio = "Enthusiastic BCA student passionate about event photography, video editing, and campus social media.",
-            Experience = "Handled official photography for university tech fest and cultural events.",
-            Availability = "Weekends and evenings", Rating = 4.8, TotalReviews = 2
+            Availability = "Weekends and evenings"
         };
 
         var sPriya = new Student
         {
-            UserId = uPriya.Id, Name = uPriya.Name, Email = uPriya.Email,
-            College = "Gujarat University", Course = "B.Des", Year = 2,
+            UserId = uPriya.Id,
+            College = "Gujarat University",
+            Course = "B.Des",
+            Year = 2,
             Location = "Ahmedabad",
             Bio = "Creative design student focused on branding, event banners, posters, and digital artwork.",
-            Experience = "Designed brand identities and social media creatives for college clubs.",
-            Availability = "Flexible", Rating = 4.7, TotalReviews = 1
+            Availability = "Flexible"
         };
 
         var sRahul = new Student
         {
-            UserId = uRahul.Id, Name = uRahul.Name, Email = uRahul.Email,
-            College = "Mumbai University", Course = "B.Tech (IT)", Year = 3,
+            UserId = uRahul.Id,
+            College = "Mumbai University",
+            Course = "B.Tech (IT)",
+            Year = 3,
             Location = "Mumbai",
             Bio = "Full-stack web developer building practical software for student hackathons and clubs.",
-            Experience = "Built registration portals and live voting systems for university fests.",
-            Availability = "Weekday evenings", Rating = 4.9, TotalReviews = 1
+            Availability = "Weekday evenings"
         };
 
         var sAnanya = new Student
         {
-            UserId = uAnanya.Id, Name = uAnanya.Name, Email = uAnanya.Email,
-            College = "Anna University", Course = "B.Com", Year = 2,
+            UserId = uAnanya.Id,
+            College = "Anna University",
+            Course = "B.Com",
+            Year = 2,
             Location = "Chennai",
             Bio = "Music coordinator and vocal artist who loves organizing campus concerts and cultural gatherings.",
-            Experience = "Coordinated inter-college open mics and acoustic live music events.",
-            Availability = "Weekends", Rating = 5.0, TotalReviews = 1
+            Availability = "Weekends"
         };
 
         var sAditya = new Student
         {
-            UserId = uAditya.Id, Name = uAditya.Name, Email = uAditya.Email,
-            College = "Pune University", Course = "BCA", Year = 1,
+            UserId = uAditya.Id,
+            College = "Pune University",
+            Course = "BCA",
+            Year = 1,
             Location = "Pune",
             Bio = "First-year computer science student eager to collaborate on tech projects and learn full-stack web dev.",
-            Experience = "Built personal portfolio website and helped coordinate campus coding workshop.",
-            Availability = "Flexible", Rating = 5.0, TotalReviews = 0
+            Availability = "Flexible"
         };
 
         var sAarav = new Student
         {
-            UserId = uAarav.Id, Name = uAarav.Name, Email = uAarav.Email,
-            College = "Bangalore University", Course = "B.Sc Computer Science", Year = 2,
+            UserId = uAarav.Id,
+            College = "Bangalore University",
+            Course = "B.Sc Computer Science",
+            Year = 2,
             Location = "Bengaluru",
             Bio = "Creative coder passionate about front-end interfaces, writing, and campus community building.",
-            Experience = "Active contributor to open-source student initiatives and technical blogs.",
-            Availability = "Weekends", Rating = 4.9, TotalReviews = 0
+            Availability = "Weekends"
         };
 
         context.Students.AddRange(sRohan, sPriya, sRahul, sAnanya, sAditya, sAarav);
         context.SaveChanges();
 
-        // 4. Link skills to students
+        // 5. Link skills to students
         void AddStudentSkill(Student student, string skillName)
         {
             var sk = skills.FirstOrDefault(s => s.Name == skillName);
@@ -145,7 +199,7 @@ public static class DbInitializer
 
         context.SaveChanges();
 
-        // 5. Seed Portfolios
+        // 6. Seed Portfolios
         context.Portfolios.AddRange(new[]
         {
             new Portfolio { StudentId = sRohan.Id, ProjectTitle = "Annual Campus Fest 2025", Description = "Lead photographer covering 3 days of student music and sports events.", SkillName = "Photography", Role = "Lead Photographer", ProjectDate = new DateTime(2025, 11, 12), ImageUrl = "", ExternalLink = "https://instagram.com" },
@@ -156,18 +210,18 @@ public static class DbInitializer
         });
         context.SaveChanges();
 
-        // 6. Seed Opportunities
+        // 7. Seed Opportunities (Dynamic sensible future dates for viva/demo presentation)
         var opp1 = new Opportunity
         {
             OrganizerId = uOrg.Id,
-            Title = "National Youth Fest 2026 Coverage",
-            Description = "We are seeking skilled student photographers and video editors to document our 3-day youth festival.",
-            OpportunityDate = new DateTime(2026, 10, 18),
-            Location = "University Main Auditorium", College = "Delhi University",
-            NumberOfParticipants = 6,
-            ApplicationDeadline = new DateTime(2026, 9, 30),
-            Type = OpportunityType.Paid,
-            AdditionalRequirements = "DSLR or high-resolution smartphone required."
+            Title = "National Youth Fest Coverage",
+            Description = "We are seeking skilled student photographers and video editors to document our upcoming 3-day youth festival.",
+            OpportunityDate = DateTime.Today.AddDays(25),
+            Location = "University Main Auditorium",
+            RequiredMembers = 6,
+            Deadline = DateTime.Today.AddDays(15),
+            OpportunityType = OpportunityType.Paid,
+            Status = StatusType.Accepted
         };
 
         var opp2 = new Opportunity
@@ -175,25 +229,25 @@ public static class DbInitializer
             OrganizerId = uOrg.Id,
             Title = "Student Innovation Demo Day",
             Description = "Build registration portals and promotional graphics for our upcoming student startup demo showcase.",
-            OpportunityDate = new DateTime(2026, 11, 5),
-            Location = "Innovation Center, Tech Campus", College = "Mumbai University",
-            NumberOfParticipants = 4,
-            ApplicationDeadline = new DateTime(2026, 10, 20),
-            Type = OpportunityType.Collaboration,
-            AdditionalRequirements = "Weekly team sync on Microsoft Teams or Zoom."
+            OpportunityDate = DateTime.Today.AddDays(20),
+            Location = "Innovation Center, Tech Campus",
+            RequiredMembers = 4,
+            Deadline = DateTime.Today.AddDays(12),
+            OpportunityType = OpportunityType.Collaboration,
+            Status = StatusType.Accepted
         };
 
         var opp3 = new Opportunity
         {
             OrganizerId = uOrg.Id,
-            Title = "Inter-College Music & Cultural Evening",
+            Title = "Inter-College Cultural & Music Evening",
             Description = "Join the stage and backstage organizing team for an energetic evening of student live music and dance.",
-            OpportunityDate = new DateTime(2026, 9, 28),
-            Location = "Open Air Amphitheatre", College = "Gujarat University",
-            NumberOfParticipants = 10,
-            ApplicationDeadline = new DateTime(2026, 9, 20),
-            Type = OpportunityType.Unpaid,
-            AdditionalRequirements = "Open to all passionate student artists and volunteers."
+            OpportunityDate = DateTime.Today.AddDays(30),
+            Location = "Open Air Amphitheatre",
+            RequiredMembers = 8,
+            Deadline = DateTime.Today.AddDays(18),
+            OpportunityType = OpportunityType.Unpaid,
+            Status = StatusType.Accepted
         };
 
         context.Opportunities.AddRange(opp1, opp2, opp3);
@@ -218,62 +272,36 @@ public static class DbInitializer
         AddOppSkill(opp3, "Event Management");
         context.SaveChanges();
 
-        // 7. Seed Applications
+        // 8. Seed Applications
         context.Applications.AddRange(new[]
         {
-            new Application { OpportunityId = opp1.Id, StudentId = sPriya.Id, Message = "I would love to design the official event banners and posters.", AppliedOn = DateTime.UtcNow.AddDays(-2), Status = StatusType.Pending },
-            new Application { OpportunityId = opp1.Id, StudentId = sRohan.Id, Message = "Experienced with festival event photography and reels.", AppliedOn = DateTime.UtcNow.AddDays(-4), Status = StatusType.Accepted },
-            new Application { OpportunityId = opp2.Id, StudentId = sRahul.Id, Message = "I can build the web registration portal using ASP.NET Core.", AppliedOn = DateTime.UtcNow.AddDays(-1), Status = StatusType.Completed },
-            new Application { OpportunityId = opp3.Id, StudentId = sAnanya.Id, Message = "Excited to perform acoustic vocals and manage stage sounds.", AppliedOn = DateTime.UtcNow.AddDays(-5), Status = StatusType.Completed }
+            new Application { OpportunityId = opp1.Id, StudentId = sPriya.Id, Message = "I would love to design the official event banners and posters.", AppliedAt = DateTime.UtcNow.AddDays(-2), Status = StatusType.Pending },
+            new Application { OpportunityId = opp1.Id, StudentId = sRohan.Id, Message = "Experienced with festival event photography and reels.", AppliedAt = DateTime.UtcNow.AddDays(-4), Status = StatusType.Accepted },
+            new Application { OpportunityId = opp2.Id, StudentId = sRahul.Id, Message = "I can build the web registration portal using ASP.NET Core.", AppliedAt = DateTime.UtcNow.AddDays(-1), Status = StatusType.Completed },
+            new Application { OpportunityId = opp3.Id, StudentId = sAnanya.Id, Message = "Excited to perform acoustic vocals and manage stage sounds.", AppliedAt = DateTime.UtcNow.AddDays(-5), Status = StatusType.Completed }
         });
         context.SaveChanges();
 
-        // 8. Seed Collaborations
+        // 9. Seed Peer-to-Peer Collaborations
         context.Collaborations.AddRange(new[]
         {
             new Collaboration
             {
-                RequesterId = sPriya.Id, ReceiverId = sRohan.Id,
+                RequesterId = sPriya.Id,
+                ReceiverId = sRohan.Id,
                 ProjectTitle = "College Magazine Photojournalism",
                 Message = "Hi Rohan! Would you like to collaborate on the photography for our upcoming campus magazine issue?",
-                CreatedAt = DateTime.UtcNow.AddDays(-3), Status = StatusType.Pending
+                CreatedAt = DateTime.UtcNow.AddDays(-3),
+                Status = StatusType.Pending
             },
             new Collaboration
             {
-                RequesterId = sRohan.Id, ReceiverId = sRahul.Id,
+                RequesterId = sRohan.Id,
+                ReceiverId = sRahul.Id,
                 ProjectTitle = "Student Portfolio Portal",
                 Message = "Hi Rahul! Want to build an open-source portfolio showcase template together?",
-                CreatedAt = DateTime.UtcNow.AddDays(-1), Status = StatusType.Pending
-            }
-        });
-        context.SaveChanges();
-
-        // 9. Seed Reviews
-        context.Reviews.AddRange(new[]
-        {
-            new Review
-            {
-                ReviewerId = uOrg.Id, ReviewerName = uOrg.Name, ReviewerRole = "Organizer",
-                StudentId = sRohan.Id, Rating = 5,
-                Comment = "Rohan captured incredible high-quality photos for our youth fest. Highly punctual and creative!",
-                CreatedAt = DateTime.UtcNow.AddDays(-10),
-                RelatedEntityTitle = opp1.Title, OpportunityId = opp1.Id
-            },
-            new Review
-            {
-                ReviewerId = uRahul.Id, ReviewerName = uRahul.Name, ReviewerRole = "Student",
-                StudentId = sRohan.Id, Rating = 5,
-                Comment = "Great collaboration experience. Handled video editing with quick turnaround.",
-                CreatedAt = DateTime.UtcNow.AddDays(-6),
-                RelatedEntityTitle = "Fest Teaser Video"
-            },
-            new Review
-            {
-                ReviewerId = uOrg.Id, ReviewerName = uOrg.Name, ReviewerRole = "Organizer",
-                StudentId = sPriya.Id, Rating = 5,
-                Comment = "Priya designed excellent banner assets and social media kits.",
-                CreatedAt = DateTime.UtcNow.AddDays(-15),
-                RelatedEntityTitle = opp2.Title, OpportunityId = opp2.Id
+                CreatedAt = DateTime.UtcNow.AddDays(-1),
+                Status = StatusType.Pending
             }
         });
         context.SaveChanges();

@@ -9,5 +9,4 @@ public class AdminDashboardViewModel
     public List<Opportunity> Opportunities { get; set; } = new();
     public List<Skill> Skills { get; set; } = new();
     public List<Collaboration> Collaborations { get; set; } = new();
-    public List<Review> Reviews { get; set; } = new();
 }

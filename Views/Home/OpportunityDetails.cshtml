@@ -4,7 +4,7 @@
     string userRole = ViewBag.UserRole ?? "";
     bool hasApplied = ViewBag.HasApplied ?? false;
     var existingApp = ViewBag.ExistingApplication as CampusCrew.Models.Application;
-    bool isDeadlinePassed = ViewBag.IsDeadlinePassed ?? (Model.ApplicationDeadline.Date < DateTime.Today);
+    bool isDeadlinePassed = ViewBag.IsDeadlinePassed ?? (Model.Deadline.Date < DateTime.Today);
     var organizerName = Model.Organizer?.Name ?? "Campus Club";
 }
 
@@ -17,11 +17,11 @@
         <div class="card shadow-sm mb-4">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    @if (Model.Type == CampusCrew.Models.OpportunityType.Paid)
+                    @if (Model.OpportunityType == CampusCrew.Models.OpportunityType.Paid)
                     {
                         <span class="badge bg-success fs-6"><i class="bi bi-cash-stack me-1"></i>Paid Opportunity</span>
                     }
-                    else if (Model.Type == CampusCrew.Models.OpportunityType.Collaboration)
+                    else if (Model.OpportunityType == CampusCrew.Models.OpportunityType.Collaboration)
                     {
                         <span class="badge bg-primary fs-6"><i class="bi bi-people-fill me-1"></i>Collaboration</span>
                     }
@@ -54,9 +54,9 @@
 
                 <h5 class="mt-4">Required Skills</h5>
                 <div class="d-flex flex-wrap gap-2 mb-4">
-                    @foreach (var skill in Model.RequiredSkills)
+                    @foreach (var skill in Model.OpportunitySkills)
                     {
-                        <span class="badge bg-primary p-2">@skill</span>
+                        <span class="badge bg-primary p-2">@skill.Skill?.Name</span>
                     }
                 </div>
 
@@ -82,11 +82,11 @@
                     </li>
                     <li class="list-group-item d-flex justify-content-between px-0">
                         <span class="text-muted"><i class="bi bi-clock me-1"></i>Deadline</span>
-                        <strong class="@(isDeadlinePassed ? "text-danger" : "")">@Model.ApplicationDeadline.ToString("MMM dd, yyyy")</strong>
+                        <strong class="@(isDeadlinePassed ? "text-danger" : "")">@Model.Deadline.ToString("MMM dd, yyyy")</strong>
                     </li>
                     <li class="list-group-item d-flex justify-content-between px-0">
                         <span class="text-muted"><i class="bi bi-people me-1"></i>Spots</span>
-                        <strong>@Model.NumberOfParticipants students</strong>
+                        <strong>@Model.RequiredMembers students</strong>
                     </li>
                     <li class="list-group-item d-flex justify-content-between px-0">
                         <span class="text-muted"><i class="bi bi-building me-1"></i>Organizer</span>

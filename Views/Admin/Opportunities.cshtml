@@ -3,7 +3,7 @@
     ViewData["Title"] = "Opportunity Moderation";
     var oppList = Model.ToList();
     var totalApplications = oppList.Sum(o => o.Applications.Count);
-    var openCount = oppList.Count(o => o.ApplicationDeadline >= DateTime.Today);
+    var openCount = oppList.Count(o => o.Deadline >= DateTime.Today);
 }
 
 <div class="row align-items-center mb-4">
@@ -51,7 +51,7 @@
                 <tbody>
                     @foreach (var opp in oppList)
                     {
-                        var isExpired = opp.ApplicationDeadline < DateTime.Today;
+                        var isExpired = opp.Deadline < DateTime.Today;
                         var orgName = opp.Organizer?.Name ?? "Campus Club";
                         <tr>
                             <td>
@@ -60,14 +60,14 @@
                             </td>
                             <td>@orgName</td>
                             <td>
-                                <span class="badge @(opp.Type == CampusCrew.Models.OpportunityType.Paid ? "bg-success" : (opp.Type == CampusCrew.Models.OpportunityType.Collaboration ? "bg-primary" : "bg-secondary"))">
-                                    @opp.Type
+                                <span class="badge @(opp.OpportunityType == CampusCrew.Models.OpportunityType.Paid ? "bg-success" : (opp.OpportunityType == CampusCrew.Models.OpportunityType.Collaboration ? "bg-primary" : "bg-secondary"))">
+                                    @opp.OpportunityType
                                 </span>
                             </td>
                             <td><strong>@opp.Applications.Count</strong></td>
                             <td>
                                 <span class="@(isExpired ? "text-danger" : "text-muted")">
-                                    @opp.ApplicationDeadline.ToString("MMM dd, yyyy")
+                                    @opp.Deadline.ToString("MMM dd, yyyy")
                                 </span>
                             </td>
                             <td class="text-end">

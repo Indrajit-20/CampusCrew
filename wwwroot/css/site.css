@@ -1,91 +1,121 @@
-/* CampusCrew - Basic Clean UI */
+/* CampusCrew - Clean, Simple Student Project UI */
+
+:root {
+    --primary-color: #2D6A4F;
+    --primary-hover: #1B4332;
+    --primary-light: #E8F5E9;
+    --text-dark: #212529;
+    --text-muted: #6c757d;
+    --border-color: #e9ecef;
+}
 
 body {
-    background-color: #ffffff;
-    color: #212529;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: var(--text-dark);
+    min-height: 100vh;
 }
 
 /* Navbar */
 .navbar {
     background-color: #ffffff;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .navbar-brand {
-    color: #52734D !important;
     font-weight: 700;
+    color: var(--primary-color) !important;
+    font-size: 1.25rem;
 }
 
 .nav-link {
     color: #495057 !important;
+    font-weight: 500;
 }
 
-.nav-link:hover {
-    color: #52734D !important;
+.nav-link:hover, .nav-link.active {
+    color: var(--primary-color) !important;
 }
 
-/* Buttons using your green color */
+/* Buttons */
 .btn-primary {
-    background-color: #52734D;
-    border-color: #52734D;
-    color: #ffffff;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .btn-primary:hover, .btn-primary:focus {
-    background-color: #415E3C;
-    border-color: #415E3C;
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
     color: #ffffff;
 }
 
-.btn-outline-primary, .btn-outline-success {
-    color: #52734D;
-    border-color: #52734D;
-}
-
-.btn-outline-primary:hover, .btn-outline-success:hover {
-    background-color: #52734D;
-    border-color: #52734D;
-    color: #ffffff;
-}
-
-/* Links */
-a {
-    color: #52734D;
-}
-
-a:hover {
-    color: #415E3C;
-}
-
-/* Standard cards */
+/* Cards */
 .card {
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: #ffffff;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Simple tags */
-.skill-tag {
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Hero Banner */
+.hero-box {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 2.5rem 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Student Avatar Circle */
+.student-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+/* Skill Tags */
+.skill-badge {
     display: inline-block;
-    padding: 2px 8px;
-    font-size: 0.8rem;
-    background-color: #e9ecef;
+    padding: 3px 8px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    background-color: #f1f3f5;
     color: #495057;
     border-radius: 4px;
-    margin: 1px;
+    margin: 2px 2px 2px 0;
+    text-decoration: none;
+}
+
+.skill-badge:hover {
+    background-color: #e9ecef;
+    color: #212529;
 }
 
 /* Simple Footer */
 footer {
-    background-color: #52734D;
-    color: #ffffff;
-}
-
-footer a {
-    color: #DDFFBC;
-    text-decoration: none;
-}
-
-footer a:hover {
-    color: #ffffff;
-    text-decoration: underline;
+    background-color: #ffffff;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-muted);
 }

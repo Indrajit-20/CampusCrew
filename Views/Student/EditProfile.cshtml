@@ -6,67 +6,62 @@
 
 <div class="row justify-content-center">
     <div class="col-md-8">
-        <div class="card shadow-sm my-4">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Edit Student Profile</h4>
+        <div class="card border-0 shadow-sm my-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <h4 class="mb-0 fw-semibold text-dark"><i class="bi bi-pencil-square me-2 text-primary"></i>Edit Student Profile</h4>
             </div>
             <div class="card-body p-4">
                 <form asp-action="EditProfile" method="post">
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-                    <h5 class="border-bottom pb-2 mb-3">1. Personal Info</h5>
+                    <h5 class="border-bottom pb-2 mb-3 fw-semibold text-dark">1. Personal Info</h5>
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
-                            <label asp-for="Name" class="form-label">Full Name</label>
+                            <label asp-for="Name" class="form-label fw-semibold">Full Name</label>
                             <input asp-for="Name" class="form-control" />
                             <span asp-validation-for="Name" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
-                            <label asp-for="Location" class="form-label">Location / City</label>
+                            <label asp-for="Location" class="form-label fw-semibold">Location / City</label>
                             <input asp-for="Location" class="form-control" />
                             <span asp-validation-for="Location" class="text-danger small"></span>
                         </div>
                     </div>
 
-                    <h5 class="border-bottom pb-2 mb-3">2. Academic Information</h5>
+                    <h5 class="border-bottom pb-2 mb-3 fw-semibold text-dark">2. Academic Information</h5>
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
-                            <label asp-for="College" class="form-label">College / University</label>
+                            <label asp-for="College" class="form-label fw-semibold">College / University</label>
                             <input asp-for="College" class="form-control" />
                             <span asp-validation-for="College" class="text-danger small"></span>
                         </div>
                         <div class="col-md-4">
-                            <label asp-for="Course" class="form-label">Course</label>
+                            <label asp-for="Course" class="form-label fw-semibold">Course / Degree</label>
                             <input asp-for="Course" class="form-control" />
                             <span asp-validation-for="Course" class="text-danger small"></span>
                         </div>
                         <div class="col-md-2">
-                            <label asp-for="Year" class="form-label">Year (1-5)</label>
+                            <label asp-for="Year" class="form-label fw-semibold">Year (1-5)</label>
                             <input asp-for="Year" class="form-control" type="number" min="1" max="5" />
                             <span asp-validation-for="Year" class="text-danger small"></span>
                         </div>
                     </div>
 
-                    <h5 class="border-bottom pb-2 mb-3">3. About & Experience</h5>
+                    <h5 class="border-bottom pb-2 mb-3 fw-semibold text-dark">3. About &amp; Availability</h5>
                     <div class="row g-3 mb-4">
                         <div class="col-12">
-                            <label asp-for="Bio" class="form-label">Bio</label>
-                            <textarea asp-for="Bio" class="form-control" rows="3"></textarea>
+                            <label asp-for="Bio" class="form-label fw-semibold">Bio / Summary</label>
+                            <textarea asp-for="Bio" class="form-control" rows="3" placeholder="Tell other students and organizers about your background and collaboration interests..."></textarea>
                             <span asp-validation-for="Bio" class="text-danger small"></span>
                         </div>
-                        <div class="col-12">
-                            <label asp-for="Experience" class="form-label">Experience</label>
-                            <textarea asp-for="Experience" class="form-control" rows="2"></textarea>
-                            <span asp-validation-for="Experience" class="text-danger small"></span>
-                        </div>
                         <div class="col-md-6">
-                            <label asp-for="Availability" class="form-label">Availability</label>
-                            <input asp-for="Availability" class="form-control" placeholder="e.g. Weekends, Flexible" />
+                            <label asp-for="Availability" class="form-label fw-semibold">Availability</label>
+                            <input asp-for="Availability" class="form-control" placeholder="e.g. Weekends, Weekday evenings, Flexible" />
                             <span asp-validation-for="Availability" class="text-danger small"></span>
                         </div>
                     </div>
 
-                    <h5 class="border-bottom pb-2 mb-3">4. Skills</h5>
+                    <h5 class="border-bottom pb-2 mb-3 fw-semibold text-dark">4. Skills</h5>
                     <div class="row g-2 mb-4">
                         @foreach (var skill in DbContext.Skills.OrderBy(s => s.Name))
                         {

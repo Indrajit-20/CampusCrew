@@ -79,9 +79,9 @@
                                 <td>
                                     <strong>@opp.Title</strong>
                                     <div class="mt-1">
-                                        @foreach (var skill in opp.RequiredSkills.Take(3))
+                                        @foreach (var skill in opp.OpportunitySkills.Take(3))
                                         {
-                                            <span class="badge bg-light text-dark border me-1">@skill</span>
+                                            <span class="badge bg-light text-dark border me-1">@skill.Skill?.Name</span>
                                         }
                                     </div>
                                 </td>
@@ -90,8 +90,8 @@
                                     <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>@opp.Location</small>
                                 </td>
                                 <td>
-                                    <span class="@(opp.ApplicationDeadline.Date < DateTime.Today ? "text-danger" : "text-muted")">
-                                        @opp.ApplicationDeadline.ToString("MMM dd, yyyy")
+                                    <span class="@(opp.Deadline.Date < DateTime.Today ? "text-danger" : "text-muted")">
+                                        @opp.Deadline.ToString("MMM dd, yyyy")
                                     </span>
                                 </td>
                                 <td>

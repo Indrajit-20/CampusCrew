@@ -24,7 +24,7 @@ public class StudentController : Controller
             .Include(a => a.Opportunity)
                 .ThenInclude(o => o!.Organizer)
             .Where(a => a.StudentId == student.Id)
-            .OrderByDescending(a => a.AppliedOn)
+            .OrderByDescending(a => a.AppliedAt)
             .ToList();
 
         var recentApps = studentApps.Take(4).Select(a => new StudentApplicationItemViewModel
@@ -35,12 +35,11 @@ public class StudentController : Controller
             OrganizerName = a.Opportunity?.Organizer?.Name ?? "Organizer",
             Location = a.Opportunity?.Location ?? "",
             OpportunityDate = a.Opportunity?.OpportunityDate ?? DateTime.Today,
-            ApplicationDeadline = a.Opportunity?.ApplicationDeadline ?? DateTime.Today,
-            AppliedOn = a.AppliedOn,
+            ApplicationDeadline = a.Opportunity?.Deadline ?? DateTime.Today,
+            AppliedOn = a.AppliedAt,
             Message = a.Message,
             Status = a.Status,
-            OpportunityType = a.Opportunity?.Type ?? OpportunityType.Collaboration,
-            HasReviewed = _context.Reviews.Any(r => r.ReviewerId == (student.UserId ?? student.Id) && r.OpportunityId == a.OpportunityId)
+            OpportunityType = a.Opportunity?.OpportunityType ?? OpportunityType.Collaboration
         }).ToList();
 
         var receivedRequests = _context.Collaborations
@@ -55,8 +54,6 @@ public class StudentController : Controller
             PendingApplications = studentApps.Count(x => x.Status == StatusType.Pending),
             AcceptedApplications = studentApps.Count(x => x.Status == StatusType.Accepted),
             CompletedCollaborations = studentApps.Count(x => x.Status == StatusType.Completed),
-            AverageRating = student.Rating,
-            TotalReviews = student.TotalReviews,
             PendingCollaborationRequests = receivedRequests.Count(x => x.Status == StatusType.Pending),
             RecentApplications = recentApps
         };
@@ -68,11 +65,6 @@ public class StudentController : Controller
     {
         if (!IsStudentLoggedIn()) return RedirectToLogin();
         var student = GetActiveStudent();
-
-        ViewBag.Reviews = _context.Reviews
-            .Where(r => r.StudentId == student.Id)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToList();
         ViewBag.IsSelf = true;
         return View(student);
     }
@@ -90,13 +82,12 @@ public class StudentController : Controller
 
         return View(new StudentProfileViewModel
         {
-            Name = student.Name,
+            Name = student.User?.Name ?? string.Empty,
             College = student.College,
             Course = student.Course,
             Year = student.Year,
             Location = student.Location,
             Bio = student.Bio,
-            Experience = student.Experience,
             Availability = student.Availability,
             SelectedSkills = selectedSkills
         });
@@ -114,35 +105,31 @@ public class StudentController : Controller
         }
 
         var student = GetActiveStudent();
-        student.Name = model.Name.Trim();
+
+        // Update User Name
+        if (student.User != null)
+        {
+            student.User.Name = model.Name.Trim();
+            HttpContext.Session.SetString("DisplayName", student.User.Name);
+        }
+
+        // Update Student profile fields
         student.College = model.College.Trim();
         student.Course = model.Course.Trim();
         student.Year = model.Year;
         student.Location = model.Location.Trim();
         student.Bio = model.Bio.Trim();
-        student.Experience = model.Experience.Trim();
         student.Availability = model.Availability.Trim();
-
-        // Update User name if linked
-        if (student.UserId.HasValue)
-        {
-            var user = _context.Users.FirstOrDefault(u => u.Id == student.UserId.Value);
-            if (user != null)
-            {
-                user.Name = student.Name;
-                HttpContext.Session.SetString("DisplayName", student.Name);
-            }
-        }
 
         // Update skills
         var existingSkills = _context.StudentSkills.Where(ss => ss.StudentId == student.Id).ToList();
         _context.StudentSkills.RemoveRange(existingSkills);
 
-        if (model.SelectedSkills != null)
+        if (model.SelectedSkills != null && model.SelectedSkills.Any())
         {
             foreach (var skillName in model.SelectedSkills.Distinct())
             {
-                var skill = _context.Skills.FirstOrDefault(s => s.Name == skillName);
+                var skill = _context.Skills.FirstOrDefault(s => s.Name.ToLower() == skillName.ToLower());
                 if (skill != null)
                 {
                     _context.StudentSkills.Add(new StudentSkill
@@ -168,7 +155,7 @@ public class StudentController : Controller
             .Include(a => a.Opportunity)
                 .ThenInclude(o => o!.Organizer)
             .Where(a => a.StudentId == student.Id)
-            .OrderByDescending(a => a.AppliedOn)
+            .OrderByDescending(a => a.AppliedAt)
             .Select(a => new StudentApplicationItemViewModel
             {
                 ApplicationId = a.Id,
@@ -177,16 +164,37 @@ public class StudentController : Controller
                 OrganizerName = a.Opportunity != null && a.Opportunity.Organizer != null ? a.Opportunity.Organizer.Name : "Organizer",
                 Location = a.Opportunity != null ? a.Opportunity.Location : "",
                 OpportunityDate = a.Opportunity != null ? a.Opportunity.OpportunityDate : DateTime.Today,
-                ApplicationDeadline = a.Opportunity != null ? a.Opportunity.ApplicationDeadline : DateTime.Today,
-                AppliedOn = a.AppliedOn,
+                ApplicationDeadline = a.Opportunity != null ? a.Opportunity.Deadline : DateTime.Today,
+                AppliedOn = a.AppliedAt,
                 Message = a.Message,
                 Status = a.Status,
-                OpportunityType = a.Opportunity != null ? a.Opportunity.Type : OpportunityType.Collaboration,
-                HasReviewed = _context.Reviews.Any(r => r.ReviewerId == (student.UserId ?? student.Id) && r.OpportunityId == a.OpportunityId)
+                OpportunityType = a.Opportunity != null ? a.Opportunity.OpportunityType : OpportunityType.Collaboration
             })
             .ToList();
 
         return View(new MyApplicationsViewModel { Applications = apps });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult WithdrawApplication(int id)
+    {
+        if (!IsStudentLoggedIn()) return RedirectToLogin();
+        var student = GetActiveStudent();
+
+        var app = _context.Applications.FirstOrDefault(a => a.Id == id && a.StudentId == student.Id);
+        if (app != null && app.Status == StatusType.Pending)
+        {
+            _context.Applications.Remove(app);
+            _context.SaveChanges();
+            TempData["Success"] = "Application withdrawn successfully.";
+        }
+        else
+        {
+            TempData["Error"] = "Could not withdraw this application.";
+        }
+
+        return RedirectToAction(nameof(MyApplications));
     }
 
     public IActionResult CollaborationRequests(string tab = "received")
@@ -196,12 +204,20 @@ public class StudentController : Controller
 
         var received = _context.Collaborations
             .Include(c => c.Requester)
+                .ThenInclude(r => r!.User)
+            .Include(c => c.Requester)
+                .ThenInclude(r => r!.StudentSkills)
+                    .ThenInclude(ss => ss.Skill)
             .Where(c => c.ReceiverId == student.Id)
             .OrderByDescending(c => c.CreatedAt)
             .ToList();
 
         var sent = _context.Collaborations
             .Include(c => c.Receiver)
+                .ThenInclude(r => r!.User)
+            .Include(c => c.Receiver)
+                .ThenInclude(r => r!.StudentSkills)
+                    .ThenInclude(ss => ss.Skill)
             .Where(c => c.RequesterId == student.Id)
             .OrderByDescending(c => c.CreatedAt)
             .ToList();
@@ -221,6 +237,7 @@ public class StudentController : Controller
     {
         if (!IsStudentLoggedIn()) return RedirectToLogin();
         var targetStudent = _context.Students
+            .Include(s => s.User)
             .Include(s => s.StudentSkills).ThenInclude(ss => ss.Skill)
             .FirstOrDefault(s => s.Id == id);
 
@@ -236,7 +253,7 @@ public class StudentController : Controller
         var model = new CollaborationRequestViewModel
         {
             ReceiverId = targetStudent.Id,
-            ReceiverName = targetStudent.Name,
+            ReceiverName = targetStudent.User?.Name ?? "Student",
             ReceiverSkills = string.Join(", ", targetStudent.Skills)
         };
 
@@ -248,7 +265,7 @@ public class StudentController : Controller
     public IActionResult RequestCollaboration(CollaborationRequestViewModel model)
     {
         if (!IsStudentLoggedIn()) return RedirectToLogin();
-        var targetStudent = _context.Students.FirstOrDefault(s => s.Id == model.ReceiverId);
+        var targetStudent = _context.Students.Include(s => s.User).FirstOrDefault(s => s.Id == model.ReceiverId);
         if (targetStudent is null) return NotFound();
 
         var activeStudent = GetActiveStudent();
@@ -273,7 +290,7 @@ public class StudentController : Controller
         _context.Collaborations.Add(collab);
         _context.SaveChanges();
 
-        TempData["Success"] = $"Collaboration request sent to {targetStudent.Name}!";
+        TempData["Success"] = $"Collaboration request sent to {targetStudent.User?.Name}!";
         return RedirectToAction(nameof(CollaborationRequests), new { tab = "sent" });
     }
 
@@ -283,13 +300,13 @@ public class StudentController : Controller
     {
         if (!IsStudentLoggedIn()) return RedirectToLogin();
         var student = GetActiveStudent();
-        var req = _context.Collaborations.Include(c => c.Requester).FirstOrDefault(c => c.Id == id);
+        var req = _context.Collaborations.Include(c => c.Requester).ThenInclude(r => r!.User).FirstOrDefault(c => c.Id == id);
         if (req == null || req.ReceiverId != student.Id) return NotFound();
 
         req.Status = StatusType.Accepted;
         _context.SaveChanges();
 
-        TempData["Success"] = $"Accepted collaboration from {req.Requester?.Name}!";
+        TempData["Success"] = $"Accepted collaboration from {req.Requester?.User?.Name}!";
         return RedirectToAction(nameof(CollaborationRequests), new { tab = "received" });
     }
 
@@ -299,13 +316,13 @@ public class StudentController : Controller
     {
         if (!IsStudentLoggedIn()) return RedirectToLogin();
         var student = GetActiveStudent();
-        var req = _context.Collaborations.Include(c => c.Requester).FirstOrDefault(c => c.Id == id);
+        var req = _context.Collaborations.Include(c => c.Requester).ThenInclude(r => r!.User).FirstOrDefault(c => c.Id == id);
         if (req == null || req.ReceiverId != student.Id) return NotFound();
 
         req.Status = StatusType.Rejected;
         _context.SaveChanges();
 
-        TempData["Info"] = $"Declined collaboration from {req.Requester?.Name}.";
+        TempData["Info"] = $"Declined collaboration from {req.Requester?.User?.Name}.";
         return RedirectToAction(nameof(CollaborationRequests), new { tab = "received" });
     }
 
@@ -328,6 +345,7 @@ public class StudentController : Controller
     public IActionResult StudentProfile(int id)
     {
         var student = _context.Students
+            .Include(s => s.User)
             .Include(s => s.StudentSkills).ThenInclude(ss => ss.Skill)
             .Include(s => s.Portfolios)
             .FirstOrDefault(s => s.Id == id);
@@ -335,25 +353,18 @@ public class StudentController : Controller
         if (student is null) return NotFound();
 
         var userRole = HttpContext.Session.GetString("Role");
-        var activeEmail = HttpContext.Session.GetString("Email");
-        var activeStudent = !string.IsNullOrEmpty(activeEmail) ? _context.Students.FirstOrDefault(s => s.Email.ToLower() == activeEmail.ToLower()) : null;
+        var userId = HttpContext.Session.GetInt32("UserId");
 
-        bool isSelf = activeStudent != null && activeStudent.Id == student.Id;
+        bool isSelf = userId.HasValue && student.UserId == userId.Value;
         ViewBag.IsSelf = isSelf;
         ViewBag.ViewerRole = userRole;
-        ViewBag.Reviews = _context.Reviews
-            .Where(r => r.StudentId == student.Id)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToList();
 
-        // If Organizer, fetch their opportunities for invitations
-        if (userRole == UserRole.Organizer.ToString())
+        // If Organizer is viewing, fetch their active opportunities to invite this student
+        if (userRole == UserRole.Organizer.ToString() && userId.HasValue)
         {
-            var orgEmail = HttpContext.Session.GetString("Email");
-            var orgUser = _context.Users.FirstOrDefault(u => u.Email.ToLower() == (orgEmail ?? "").ToLower());
-            ViewBag.OrganizerOpportunities = orgUser != null
-                ? _context.Opportunities.Where(o => o.OrganizerId == orgUser.Id).ToList()
-                : new List<Opportunity>();
+            ViewBag.OrganizerOpportunities = _context.Opportunities
+                .Where(o => o.OrganizerId == userId.Value)
+                .ToList();
         }
 
         return View(student);
@@ -370,15 +381,18 @@ public class StudentController : Controller
         if (opportunity is null) return NotFound();
 
         var userRole = HttpContext.Session.GetString("Role");
-        var activeEmail = HttpContext.Session.GetString("Email");
-        var activeStudent = (!string.IsNullOrEmpty(activeEmail) && userRole == UserRole.Student.ToString())
-            ? _context.Students.FirstOrDefault(s => s.Email.ToLower() == activeEmail.ToLower())
-            : null;
+        var userId = HttpContext.Session.GetInt32("UserId");
+        Student? activeStudent = null;
+
+        if (userRole == UserRole.Student.ToString() && userId.HasValue)
+        {
+            activeStudent = _context.Students.FirstOrDefault(s => s.UserId == userId.Value);
+        }
 
         ViewBag.UserRole = userRole;
         ViewBag.HasApplied = false;
         ViewBag.ExistingApplication = (Application?)null;
-        ViewBag.IsDeadlinePassed = opportunity.ApplicationDeadline.Date < DateTime.Today;
+        ViewBag.IsDeadlinePassed = opportunity.Deadline.Date < DateTime.Today;
 
         if (activeStudent != null)
         {
@@ -414,7 +428,7 @@ public class StudentController : Controller
             ProjectTitle = model.ProjectTitle.Trim(),
             Description = model.Description.Trim(),
             SkillName = model.SkillName,
-            ImageUrl = string.IsNullOrWhiteSpace(model.ImageUrl) ? "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80" : model.ImageUrl.Trim(),
+            ImageUrl = string.IsNullOrWhiteSpace(model.ImageUrl) ? "" : model.ImageUrl.Trim(),
             ExternalLink = model.ExternalLink?.Trim() ?? string.Empty,
             ProjectDate = model.ProjectDate,
             Role = model.Role.Trim()
@@ -424,6 +438,24 @@ public class StudentController : Controller
         _context.SaveChanges();
 
         TempData["Success"] = "Portfolio project added successfully.";
+        return RedirectToAction(nameof(Profile));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult DeletePortfolio(int id)
+    {
+        if (!IsStudentLoggedIn()) return RedirectToLogin();
+        var student = GetActiveStudent();
+
+        var portfolio = _context.Portfolios.FirstOrDefault(p => p.Id == id && p.StudentId == student.Id);
+        if (portfolio != null)
+        {
+            _context.Portfolios.Remove(portfolio);
+            _context.SaveChanges();
+            TempData["Success"] = "Project removed from portfolio.";
+        }
+
         return RedirectToAction(nameof(Profile));
     }
 
@@ -437,7 +469,7 @@ public class StudentController : Controller
 
         if (opportunity is null) return NotFound();
 
-        if (opportunity.ApplicationDeadline.Date < DateTime.Today)
+        if (opportunity.Deadline.Date < DateTime.Today)
         {
             TempData["Error"] = "The deadline for this opportunity has passed.";
             return RedirectToAction(nameof(OpportunityDetails), new { id });
@@ -450,6 +482,7 @@ public class StudentController : Controller
             return RedirectToAction(nameof(OpportunityDetails), new { id });
         }
 
+        ViewBag.Opportunity = opportunity;
         return View(new ApplicationViewModel { OpportunityId = opportunity.Id });
     }
 
@@ -464,13 +497,17 @@ public class StudentController : Controller
 
         if (opportunity is null) return NotFound();
 
-        if (opportunity.ApplicationDeadline.Date < DateTime.Today)
+        if (opportunity.Deadline.Date < DateTime.Today)
         {
             TempData["Error"] = "The deadline has already passed.";
             return RedirectToAction(nameof(OpportunityDetails), new { id = opportunity.Id });
         }
 
-        if (!ModelState.IsValid) return View(model);
+        if (!ModelState.IsValid)
+        {
+            ViewBag.Opportunity = opportunity;
+            return View(model);
+        }
 
         var student = GetActiveStudent();
         if (opportunity.Applications.Any(x => x.StudentId == student.Id))
@@ -484,7 +521,7 @@ public class StudentController : Controller
             OpportunityId = opportunity.Id,
             StudentId = student.Id,
             Message = model.Message.Trim(),
-            AppliedOn = DateTime.UtcNow,
+            AppliedAt = DateTime.UtcNow,
             Status = StatusType.Pending
         };
 
@@ -495,112 +532,36 @@ public class StudentController : Controller
         return RedirectToAction(nameof(MyApplications));
     }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public IActionResult SubmitReview(ReviewViewModel model)
-    {
-        var role = HttpContext.Session.GetString("Role");
-        if (string.IsNullOrEmpty(role))
-        {
-            TempData["Info"] = "Please log in to submit a review.";
-            return RedirectToAction("Login", "Account");
-        }
-
-        if (!ModelState.IsValid)
-        {
-            TempData["Error"] = "Please fill out rating (1-5) and your comment.";
-            return RedirectToAction(nameof(MyApplications));
-        }
-
-        var reviewerName = HttpContext.Session.GetString("DisplayName") ?? "Reviewer";
-        var reviewerEmail = HttpContext.Session.GetString("Email") ?? string.Empty;
-        int reviewerId = 0;
-
-        if (role == UserRole.Student.ToString())
-        {
-            var student = _context.Students.FirstOrDefault(s => s.Email.ToLower() == reviewerEmail.ToLower());
-            reviewerId = student?.UserId ?? student?.Id ?? 1;
-        }
-        else
-        {
-            var org = _context.Users.FirstOrDefault(u => u.Email.ToLower() == reviewerEmail.ToLower());
-            reviewerId = org?.Id ?? 2;
-        }
-
-        // Duplicate review check
-        if (model.RelatedOpportunityId.HasValue && _context.Reviews.Any(r => r.ReviewerId == reviewerId && r.OpportunityId == model.RelatedOpportunityId.Value && r.StudentId == model.RevieweeStudentId))
-        {
-            TempData["Info"] = "You have already submitted a review for this.";
-            return RedirectToAction(nameof(MyApplications));
-        }
-
-        if (model.RelatedCollaborationId.HasValue && _context.Reviews.Any(r => r.ReviewerId == reviewerId && r.CollaborationId == model.RelatedCollaborationId.Value))
-        {
-            TempData["Info"] = "You have already submitted a review for this collaboration.";
-            return RedirectToAction(nameof(CollaborationRequests));
-        }
-
-        var review = new Review
-        {
-            ReviewerId = reviewerId,
-            ReviewerName = reviewerName,
-            ReviewerRole = role,
-            StudentId = model.RevieweeStudentId,
-            Rating = Math.Clamp(model.Rating, 1, 5),
-            Comment = model.Comment.Trim(),
-            CreatedAt = DateTime.UtcNow,
-            RelatedEntityTitle = model.RelatedEntityTitle ?? "",
-            OpportunityId = model.RelatedOpportunityId,
-            CollaborationId = model.RelatedCollaborationId
-        };
-
-        _context.Reviews.Add(review);
-        _context.SaveChanges();
-
-        // Recalculate student rating
-        var reviewee = _context.Students.FirstOrDefault(s => s.Id == model.RevieweeStudentId);
-        if (reviewee != null)
-        {
-            var reviews = _context.Reviews.Where(r => r.StudentId == reviewee.Id).ToList();
-            reviewee.TotalReviews = reviews.Count;
-            reviewee.Rating = reviews.Count > 0 ? Math.Round(reviews.Average(r => r.Rating), 1) : 5.0;
-            _context.SaveChanges();
-        }
-
-        TempData["Success"] = "Your review has been published!";
-
-        if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
-        {
-            return Redirect(model.ReturnUrl);
-        }
-
-        return RedirectToAction(nameof(StudentProfile), new { id = model.RevieweeStudentId });
-    }
-
     private Student GetActiveStudent()
     {
-        var email = HttpContext.Session.GetString("Email") ?? string.Empty;
-        var student = _context.Students
-            .Include(s => s.StudentSkills).ThenInclude(ss => ss.Skill)
-            .Include(s => s.Portfolios)
-            .Include(s => s.Applications)
-            .FirstOrDefault(s => s.Email.ToLower() == email.ToLower());
-
-        if (student == null)
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId.HasValue && userId.Value > 0)
         {
-            student = _context.Students
+            var student = _context.Students
+                .Include(s => s.User)
                 .Include(s => s.StudentSkills).ThenInclude(ss => ss.Skill)
                 .Include(s => s.Portfolios)
                 .Include(s => s.Applications)
-                .First();
+                .FirstOrDefault(s => s.UserId == userId.Value);
+
+            if (student != null) return student;
         }
 
-        return student;
+        var email = HttpContext.Session.GetString("Email") ?? string.Empty;
+        var studentByEmail = _context.Students
+            .Include(s => s.User)
+            .Include(s => s.StudentSkills).ThenInclude(ss => ss.Skill)
+            .Include(s => s.Portfolios)
+            .Include(s => s.Applications)
+            .FirstOrDefault(s => s.User != null && s.User.Email.ToLower() == email.ToLower());
+
+        return studentByEmail ?? throw new InvalidOperationException("Student profile not found. Please log in.");
     }
 
     private bool IsStudentLoggedIn()
     {
-        return HttpContext.Session.GetString("Role") == UserRole.Student.ToString();
+        return HttpContext.Session.GetString("Role") == UserRole.Student.ToString()
+            && (HttpContext.Session.GetInt32("UserId") ?? 0) > 0;
     }
 
     private IActionResult RedirectToLogin()

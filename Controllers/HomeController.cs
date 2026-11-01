@@ -22,16 +22,18 @@ public class HomeController : Controller
             FeaturedOpportunities = _context.Opportunities
                 .Include(o => o.OpportunitySkills)
                     .ThenInclude(os => os.Skill)
+                .Include(o => o.Organizer)
                 .OrderByDescending(o => o.Id)
                 .Take(3)
                 .ToList(),
             FeaturedStudents = _context.Students
+                .Include(s => s.User)
                 .Include(s => s.StudentSkills)
                     .ThenInclude(ss => ss.Skill)
-                .OrderByDescending(s => s.Rating)
+                .OrderByDescending(s => s.Id)
                 .Take(4)
                 .ToList(),
-            Skills = _context.Skills.ToList(),
+            Skills = _context.Skills.OrderBy(s => s.Name).ToList(),
             TotalStudents = _context.Students.Count(),
             TotalOpportunities = _context.Opportunities.Count(),
             TotalSkills = _context.Skills.Count(),
@@ -45,6 +47,7 @@ public class HomeController : Controller
     public IActionResult Students(StudentFilterViewModel filter)
     {
         var query = _context.Students
+            .Include(s => s.User)
             .Include(s => s.StudentSkills)
                 .ThenInclude(ss => ss.Skill)
             .AsQueryable();
@@ -52,12 +55,14 @@ public class HomeController : Controller
         var search = filter.Search?.Trim();
         if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.Where(x => x.Name.Contains(search) || x.Course.Contains(search) || x.Bio.Contains(search));
+            query = query.Where(x => (x.User != null && x.User.Name.Contains(search))
+                                  || x.Course.Contains(search)
+                                  || x.Bio.Contains(search));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Skill))
         {
-            query = query.Where(x => x.StudentSkills.Any(ss => ss.Skill.Name == filter.Skill));
+            query = query.Where(x => x.StudentSkills.Any(ss => ss.Skill != null && ss.Skill.Name == filter.Skill));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.College))
@@ -75,7 +80,7 @@ public class HomeController : Controller
             query = query.Where(x => x.Availability.Contains(filter.Availability));
         }
 
-        filter.Skills = _context.Skills.Select(x => x.Name).ToList();
+        filter.Skills = _context.Skills.OrderBy(s => s.Name).Select(x => x.Name).ToList();
         filter.Students = query.ToList();
         return View(filter);
     }
@@ -83,6 +88,7 @@ public class HomeController : Controller
     public IActionResult Opportunities(OpportunityFilterViewModel filter)
     {
         var query = _context.Opportunities
+            .Include(o => o.Organizer)
             .Include(o => o.OpportunitySkills)
                 .ThenInclude(os => os.Skill)
             .AsQueryable();
@@ -95,12 +101,7 @@ public class HomeController : Controller
 
         if (!string.IsNullOrWhiteSpace(filter.Skill))
         {
-            query = query.Where(x => x.OpportunitySkills.Any(os => os.Skill.Name == filter.Skill));
-        }
-
-        if (!string.IsNullOrWhiteSpace(filter.College))
-        {
-            query = query.Where(x => x.College.Contains(filter.College));
+            query = query.Where(x => x.OpportunitySkills.Any(os => os.Skill != null && os.Skill.Name == filter.Skill));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Location))
@@ -108,8 +109,8 @@ public class HomeController : Controller
             query = query.Where(x => x.Location.Contains(filter.Location));
         }
 
-        filter.Skills = _context.Skills.Select(x => x.Name).ToList();
-        filter.Opportunities = query.OrderBy(x => x.ApplicationDeadline).ToList();
+        filter.Skills = _context.Skills.OrderBy(s => s.Name).Select(x => x.Name).ToList();
+        filter.Opportunities = query.OrderBy(x => x.Deadline).ToList();
         return View(filter);
     }
 
@@ -125,15 +126,18 @@ public class HomeController : Controller
         if (opportunity is null) return NotFound();
 
         var userRole = HttpContext.Session.GetString("Role");
-        var activeEmail = HttpContext.Session.GetString("Email");
-        var activeStudent = (!string.IsNullOrEmpty(activeEmail) && userRole == UserRole.Student.ToString())
-            ? _context.Students.FirstOrDefault(s => s.Email.ToLower() == activeEmail.ToLower())
-            : null;
+        var userId = HttpContext.Session.GetInt32("UserId");
+        Student? activeStudent = null;
+
+        if (userRole == UserRole.Student.ToString() && userId.HasValue)
+        {
+            activeStudent = _context.Students.FirstOrDefault(s => s.UserId == userId.Value);
+        }
 
         ViewBag.UserRole = userRole;
         ViewBag.HasApplied = false;
         ViewBag.ExistingApplication = (Application?)null;
-        ViewBag.IsDeadlinePassed = opportunity.ApplicationDeadline.Date < DateTime.Today;
+        ViewBag.IsDeadlinePassed = opportunity.Deadline.Date < DateTime.Today;
 
         if (activeStudent != null)
         {

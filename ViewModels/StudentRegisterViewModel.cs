@@ -30,7 +30,7 @@ public class StudentRegisterViewModel
     public string ConfirmPassword { get; set; } = string.Empty;
 
     // SECTION 2 — ACADEMIC INFORMATION
-    [Required(ErrorMessage = "Please select or enter your college/university.")]
+    [Required(ErrorMessage = "Please enter your college/university.")]
     [StringLength(120, ErrorMessage = "College name cannot exceed 120 characters.")]
     [Display(Name = "College / University")]
     public string College { get; set; } = string.Empty;
@@ -39,10 +39,6 @@ public class StudentRegisterViewModel
     [StringLength(80, ErrorMessage = "Course name cannot exceed 80 characters.")]
     [Display(Name = "Course / Degree")]
     public string Course { get; set; } = string.Empty;
-
-    [StringLength(80, ErrorMessage = "Department cannot exceed 80 characters.")]
-    [Display(Name = "Department / Specialization")]
-    public string Department { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Please select your academic year.")]
     [Range(1, 5, ErrorMessage = "Please select a valid academic year (1-5).")]

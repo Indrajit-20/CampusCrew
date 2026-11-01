@@ -12,8 +12,8 @@
         <div class="card shadow-sm mb-4">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="badge bg-primary">@Model.Type</span>
-                    <span class="small text-muted"><i class="bi bi-clock me-1"></i>Deadline: @Model.ApplicationDeadline.ToString("MMM dd, yyyy")</span>
+                    <span class="badge bg-primary">@Model.OpportunityType</span>
+                    <span class="small text-muted"><i class="bi bi-clock me-1"></i>Deadline: @Model.Deadline.ToString("MMM dd, yyyy")</span>
                 </div>
                 <h2 class="card-title fw-bold">@Model.Title</h2>
                 <p class="text-muted"><i class="bi bi-geo-alt me-1"></i>@Model.Location &bull; @Model.College</p>
@@ -25,9 +25,9 @@
 
                 <h5 class="mt-4">Required Skills</h5>
                 <div class="d-flex flex-wrap gap-2 mb-3">
-                    @foreach (var skill in Model.RequiredSkills)
+                    @foreach (var skill in Model.OpportunitySkills)
                     {
-                        <span class="badge bg-primary">@skill</span>
+                        <span class="badge bg-primary">@skill.Skill?.Name</span>
                     }
                 </div>
 
@@ -53,7 +53,7 @@
                     </li>
                     <li class="list-group-item d-flex justify-content-between px-0">
                         <span class="text-muted">Total Spots</span>
-                        <strong>@Model.NumberOfParticipants</strong>
+                        <strong>@Model.RequiredMembers</strong>
                     </li>
                     <li class="list-group-item d-flex justify-content-between px-0">
                         <span class="text-muted">Total Applicants</span>

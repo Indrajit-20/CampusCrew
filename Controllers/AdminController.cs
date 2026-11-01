@@ -1,6 +1,7 @@
 using CampusCrew.Data;
 using CampusCrew.Models;
 using CampusCrew.ViewModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,10 +10,12 @@ namespace CampusCrew.Controllers;
 public class AdminController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly PasswordHasher<User> _passwordHasher;
 
     public AdminController(ApplicationDbContext context)
     {
         _context = context;
+        _passwordHasher = new PasswordHasher<User>();
     }
 
     [HttpGet]
@@ -34,7 +37,6 @@ public class AdminController : Controller
         var emailLower = model.Email.Trim().ToLower();
         var adminUser = _context.Users.FirstOrDefault(x =>
             x.Email.ToLower() == emailLower &&
-            x.Password == model.Password &&
             x.Role == UserRole.Admin &&
             x.IsActive);
 
@@ -44,6 +46,17 @@ public class AdminController : Controller
             return View(model);
         }
 
+        var verifyResult = _passwordHasher.VerifyHashedPassword(adminUser, adminUser.PasswordHash, model.Password);
+        bool isValid = verifyResult == PasswordVerificationResult.Success
+            || (verifyResult == PasswordVerificationResult.Failed && adminUser.PasswordHash == model.Password);
+
+        if (!isValid)
+        {
+            ModelState.AddModelError(string.Empty, "Invalid administrator credentials.");
+            return View(model);
+        }
+
+        HttpContext.Session.SetInt32("UserId", adminUser.Id);
         HttpContext.Session.SetString("DisplayName", adminUser.Name);
         HttpContext.Session.SetString("Role", adminUser.Role.ToString());
         HttpContext.Session.SetString("Email", adminUser.Email);
@@ -58,12 +71,11 @@ public class AdminController : Controller
 
         var vm = new AdminDashboardViewModel
         {
-            Students = _context.Students.ToList(),
+            Students = _context.Students.Include(s => s.User).ToList(),
             Users = _context.Users.ToList(),
             Opportunities = _context.Opportunities.Include(o => o.Applications).ToList(),
             Skills = _context.Skills.ToList(),
-            Collaborations = _context.Collaborations.ToList(),
-            Reviews = _context.Reviews.ToList()
+            Collaborations = _context.Collaborations.Include(c => c.Requester).ThenInclude(r => r!.User).Include(c => c.Receiver).ThenInclude(r => r!.User).ToList()
         };
 
         return View(vm);
@@ -84,7 +96,7 @@ public class AdminController : Controller
     public IActionResult Opportunities()
     {
         if (!IsAdminLoggedIn()) return RedirectToAdminLogin();
-        return View(_context.Opportunities.Include(o => o.Applications).OrderByDescending(o => o.Id).ToList());
+        return View(_context.Opportunities.Include(o => o.Organizer).Include(o => o.Applications).OrderByDescending(o => o.Id).ToList());
     }
 
     [HttpPost]
@@ -181,18 +193,60 @@ public class AdminController : Controller
             return RedirectToAction(nameof(Users));
         }
 
-        var newUser = new User
+        using var transaction = _context.Database.BeginTransaction();
+        try
         {
-            Name = name.Trim(),
-            Email = email.Trim(),
-            Password = password,
-            Role = role,
-            CreatedAt = DateTime.UtcNow
-        };
-        _context.Users.Add(newUser);
-        _context.SaveChanges();
+            var newUser = new User
+            {
+                Name = name.Trim(),
+                Email = email.Trim(),
+                Role = role,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            newUser.PasswordHash = _passwordHasher.HashPassword(newUser, password);
 
-        TempData["Success"] = $"Account '{name.Trim()}' ({role}) created.";
+            _context.Users.Add(newUser);
+            _context.SaveChanges(); // Save first to get the generated newUser.Id
+
+            if (role == UserRole.Student)
+            {
+                _context.Students.Add(new Student
+                {
+                    UserId = newUser.Id,
+                    College = string.Empty,
+                    Course = string.Empty,
+                    Year = 1,
+                    Location = string.Empty,
+                    Bio = string.Empty,
+                    Availability = string.Empty
+                });
+                _context.SaveChanges();
+            }
+            else if (role == UserRole.Organizer)
+            {
+                _context.OrganizerProfiles.Add(new OrganizerProfile
+                {
+                    UserId = newUser.Id,
+                    OrganizationName = name.Trim(),
+                    OrganizationType = string.Empty,
+                    College = string.Empty,
+                    Location = string.Empty,
+                    Description = string.Empty,
+                    ContactNumber = string.Empty
+                });
+                _context.SaveChanges();
+            }
+
+            transaction.Commit();
+            TempData["Success"] = $"Account '{name.Trim()}' ({role}) created successfully.";
+        }
+        catch (Exception)
+        {
+            transaction.Rollback();
+            TempData["Error"] = "Failed to create account. Please try again.";
+        }
+
         return RedirectToAction(nameof(Users));
     }
 
@@ -219,7 +273,8 @@ public class AdminController : Controller
 
     private bool IsAdminLoggedIn()
     {
-        return HttpContext.Session.GetString("Role") == UserRole.Admin.ToString();
+        return HttpContext.Session.GetString("Role") == UserRole.Admin.ToString()
+            && (HttpContext.Session.GetInt32("UserId") ?? 0) > 0;
     }
 
     private IActionResult RedirectToAdminLogin()
