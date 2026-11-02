@@ -1,6 +1,5 @@
 using CampusCrew.Data;
 using CampusCrew.Models;
-using CampusCrew.Services;
 using CampusCrew.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,88 +9,119 @@ namespace CampusCrew.Controllers;
 public class HomeController : Controller
 {
     private readonly ApplicationDbContext _context;
-    private readonly CampusCrewApiClient _apiClient;
 
-    public HomeController(ApplicationDbContext context, CampusCrewApiClient apiClient)
+    public HomeController(ApplicationDbContext context)
     {
         _context = context;
-        _apiClient = apiClient;
     }
 
-    public async Task<IActionResult> Index()
+    public IActionResult Index()
     {
-        // 1. Fetch via Web API
-        var stats = await _apiClient.GetHomeStatsAsync();
-        var opportunities = await _apiClient.GetOpportunitiesAsync();
-        var students = await _apiClient.GetStudentsAsync();
-        var skills = await _apiClient.GetSkillsAsync();
-
-        // 2. Prepare View Model
         var vm = new HomeIndexViewModel
         {
-            FeaturedOpportunities = opportunities.OrderByDescending(o => o.Id).Take(3).ToList(),
-            FeaturedStudents = students.OrderByDescending(s => s.Id).Take(4).ToList(),
-            Skills = skills.OrderBy(s => s.Name).ToList(),
-            TotalStudents = stats?.TotalStudents ?? _context.Students.Count(),
-            TotalOpportunities = stats?.TotalOpportunities ?? _context.Opportunities.Count(),
-            TotalSkills = stats?.TotalSkills ?? _context.Skills.Count(),
-            TotalCollaborations = stats?.TotalCollaborations ?? _context.Collaborations.Count()
+            FeaturedOpportunities = _context.Opportunities
+                .Include(o => o.OpportunitySkills)
+                    .ThenInclude(os => os.Skill)
+                .Include(o => o.Organizer)
+                .OrderByDescending(o => o.Id)
+                .Take(3)
+                .ToList(),
+            FeaturedStudents = _context.Students
+                .Include(s => s.User)
+                .Include(s => s.StudentSkills)
+                    .ThenInclude(ss => ss.Skill)
+                .OrderByDescending(s => s.Id)
+                .Take(4)
+                .ToList(),
+            Skills = _context.Skills.OrderBy(s => s.Name).ToList(),
+            TotalStudents = _context.Students.Count(),
+            TotalOpportunities = _context.Opportunities.Count(),
+            TotalSkills = _context.Skills.Count(),
+            TotalCollaborations = _context.Collaborations.Count()
         };
-
         return View(vm);
     }
 
     public IActionResult About() => View();
 
-    public async Task<IActionResult> Students(StudentFilterViewModel filter)
+    public IActionResult Students(StudentFilterViewModel filter)
     {
-        // 1. Fetch filtered students and skills list via Web API
-        var students = await _apiClient.GetStudentsAsync(
-            filter.Search,
-            filter.Skill,
-            filter.College,
-            filter.Location,
-            filter.Availability);
+        var query = _context.Students
+            .Include(s => s.User)
+            .Include(s => s.StudentSkills)
+                .ThenInclude(ss => ss.Skill)
+            .AsQueryable();
 
-        var skills = await _apiClient.GetSkillsAsync();
-
-        filter.Skills = skills.Select(s => s.Name).OrderBy(s => s).ToList();
-        filter.Students = students;
-
-        return View(filter);
-    }
-
-    public async Task<IActionResult> Opportunities(OpportunityFilterViewModel filter)
-    {
-        // 1. Fetch filtered opportunities and skills list via Web API
-        var opportunities = await _apiClient.GetOpportunitiesAsync(
-            filter.Search,
-            filter.Skill,
-            filter.Location);
-
-        var skills = await _apiClient.GetSkillsAsync();
-
-        filter.Skills = skills.Select(s => s.Name).OrderBy(s => s).ToList();
-        filter.Opportunities = opportunities;
-
-        return View(filter);
-    }
-
-    public async Task<IActionResult> OpportunityDetails(int id)
-    {
-        // Fetch via Web API
-        var opportunity = await _apiClient.GetOpportunityByIdAsync(id);
-
-        if (opportunity is null)
+        var search = filter.Search?.Trim();
+        if (!string.IsNullOrWhiteSpace(search))
         {
-            // Fallback check in context if API wasn't running
-            opportunity = _context.Opportunities
-                .Include(o => o.OpportunitySkills)
-                    .ThenInclude(os => os.Skill)
-                .Include(o => o.Organizer)
-                .Include(o => o.Applications)
-                .FirstOrDefault(o => o.Id == id);
+            query = query.Where(x => (x.User != null && x.User.Name.Contains(search))
+                                  || x.Course.Contains(search)
+                                  || x.Bio.Contains(search));
         }
+
+        if (!string.IsNullOrWhiteSpace(filter.Skill))
+        {
+            query = query.Where(x => x.StudentSkills.Any(ss => ss.Skill != null && ss.Skill.Name == filter.Skill));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.College))
+        {
+            query = query.Where(x => x.College.Contains(filter.College));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Location))
+        {
+            query = query.Where(x => x.Location.Contains(filter.Location));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Availability))
+        {
+            query = query.Where(x => x.Availability.Contains(filter.Availability));
+        }
+
+        filter.Skills = _context.Skills.OrderBy(s => s.Name).Select(x => x.Name).ToList();
+        filter.Students = query.ToList();
+        return View(filter);
+    }
+
+    public IActionResult Opportunities(OpportunityFilterViewModel filter)
+    {
+        var query = _context.Opportunities
+            .Include(o => o.Organizer)
+            .Include(o => o.OpportunitySkills)
+                .ThenInclude(os => os.Skill)
+            .AsQueryable();
+
+        var search = filter.Search?.Trim();
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(x => x.Title.Contains(search) || x.Description.Contains(search));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Skill))
+        {
+            query = query.Where(x => x.OpportunitySkills.Any(os => os.Skill != null && os.Skill.Name == filter.Skill));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Location))
+        {
+            query = query.Where(x => x.Location.Contains(filter.Location));
+        }
+
+        filter.Skills = _context.Skills.OrderBy(s => s.Name).Select(x => x.Name).ToList();
+        filter.Opportunities = query.OrderBy(x => x.Deadline).ToList();
+        return View(filter);
+    }
+
+    public IActionResult OpportunityDetails(int id)
+    {
+        var opportunity = _context.Opportunities
+            .Include(o => o.OpportunitySkills)
+                .ThenInclude(os => os.Skill)
+            .Include(o => o.Organizer)
+            .Include(o => o.Applications)
+            .FirstOrDefault(o => o.Id == id);
 
         if (opportunity is null) return NotFound();
 
@@ -111,7 +141,7 @@ public class HomeController : Controller
 
         if (activeStudent != null)
         {
-            var app = _context.Applications.FirstOrDefault(a => a.OpportunityId == id && a.StudentId == activeStudent.Id);
+            var app = opportunity.Applications.FirstOrDefault(a => a.StudentId == activeStudent.Id);
             if (app != null)
             {
                 ViewBag.HasApplied = true;

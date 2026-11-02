@@ -5,23 +5,23 @@
 
 <div class="row justify-content-center">
     <div class="col-md-8">
-        <div class="card  my-4">
-            <div class="card-header bg-success text-white">
-                <h4 class="mb-0"><i class="bi bi-building me-2"></i>Register College Club / Organization</h4>
+        <div class="content-box my-4">
+            <div class="card-header">
+                College Club / Organization Registration
             </div>
             <div class="card-body p-4">
                 <form asp-action="RegisterOrganization" method="post">
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-                    <h5 class="border-bottom pb-2 mb-3">1. Organization Information</h5>
+                    <h5 class="section-header pb-2 mb-3">1. Organization Information</h5>
                     <div class="row g-3 mb-4">
                         <div class="col-md-8">
                             <label asp-for="OrganizationName" class="form-label">Organization / Club Name</label>
-                            <input asp-for="OrganizationName" class="form-control" placeholder="e.g. Riverside Tech Club" />
+                            <input asp-for="OrganizationName" class="form-control" placeholder="e.g. Riverside Tech Society" />
                             <span asp-validation-for="OrganizationName" class="text-danger small"></span>
                         </div>
                         <div class="col-md-4">
-                            <label asp-for="OrganizationType" class="form-label">Type</label>
+                            <label asp-for="OrganizationType" class="form-label">Organization Type</label>
                             <select asp-for="OrganizationType" class="form-select">
                                 <option value="Student Club">Student Club</option>
                                 <option value="Department Society">Department Society</option>
@@ -35,21 +35,21 @@
                             <span asp-validation-for="College" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
-                            <label asp-for="Location" class="form-label">Location</label>
+                            <label asp-for="Location" class="form-label">Location / City</label>
                             <input asp-for="Location" class="form-control" placeholder="Ahmedabad" />
                             <span asp-validation-for="Location" class="text-danger small"></span>
                         </div>
                         <div class="col-12">
-                            <label asp-for="Description" class="form-label">Description</label>
-                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Briefly describe what your club does..."></textarea>
+                            <label asp-for="Description" class="form-label">Description of Activities</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Briefly describe what your club or organization does..."></textarea>
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
                     </div>
 
-                    <h5 class="border-bottom pb-2 mb-3">2. Contact Person</h5>
+                    <h5 class="section-header pb-2 mb-3">2. Contact Lead Details</h5>
                     <div class="row g-3 mb-4">
                         <div class="col-md-4">
-                            <label asp-for="ContactPerson" class="form-label">Lead Name</label>
+                            <label asp-for="ContactPerson" class="form-label">Coordinator / Lead Name</label>
                             <input asp-for="ContactPerson" class="form-control" />
                             <span asp-validation-for="ContactPerson" class="text-danger small"></span>
                         </div>
@@ -65,7 +65,7 @@
                         </div>
                     </div>
 
-                    <h5 class="border-bottom pb-2 mb-3">3. Account Password</h5>
+                    <h5 class="section-header pb-2 mb-3">3. Account Password</h5>
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label asp-for="Password" class="form-label">Password</label>
@@ -79,7 +79,10 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-success w-100 py-2">Create Organization Account</button>
+                    <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                        <a asp-action="Register" class="btn btn-outline-secondary">Back</a>
+                        <button type="submit" class="btn btn-primary px-4">Create Organization Account</button>
+                    </div>
                 </form>
             </div>
         </div>

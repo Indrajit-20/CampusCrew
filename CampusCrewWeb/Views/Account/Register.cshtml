@@ -4,38 +4,36 @@
 
 <div class="row justify-content-center my-4">
     <div class="col-md-8 text-center mb-4">
-        <h2>Choose Your Account Type</h2>
-        <p class="text-muted">Join CampusCrew as a student or as a college club / organization.</p>
+        <h2>Create an Account</h2>
+        <p class="text-muted">Select how you will be participating in the CampusCrew community.</p>
     </div>
 </div>
 
 <div class="row justify-content-center g-4">
     <div class="col-md-5">
-        <div class="card h-100  text-center p-4">
-            <div class="mb-3">
-                <i class="bi bi-mortarboard-fill text-primary" style="font-size: 3rem;"></i>
-            </div>
-            <h4>Student</h4>
-            <p class="text-muted small">Showcase your skills, find campus gigs, build your portfolio, and collaborate with peers.</p>
-            <div class="mt-auto">
+        <div class="content-box h-100 p-4 d-flex flex-column">
+            <h4 class="mb-2">Student Account</h4>
+            <p class="text-secondary small flex-grow-1">
+                Showcase your skills, find campus projects and gigs, build your project portfolio, and connect with fellow students for peer collaborations.
+            </p>
+            <div class="pt-3 border-top mt-auto">
                 <a asp-action="RegisterStudent" class="btn btn-primary w-100">Register as Student</a>
             </div>
         </div>
     </div>
     <div class="col-md-5">
-        <div class="card h-100  text-center p-4">
-            <div class="mb-3">
-                <i class="bi bi-building-fill text-success" style="font-size: 3rem;"></i>
-            </div>
-            <h4>College Club / Organization</h4>
-            <p class="text-muted small">Post campus gigs and projects, recruit student talent, and manage applicants.</p>
-            <div class="mt-auto">
-                <a asp-action="RegisterOrganization" class="btn btn-success w-100">Register as Organization</a>
+        <div class="content-box h-100 p-4 d-flex flex-column">
+            <h4 class="mb-2">Club / Organization</h4>
+            <p class="text-secondary small flex-grow-1">
+                Post opportunities for campus fests, club activities, and technical teams. Review student applicants and organize your event crew.
+            </p>
+            <div class="pt-3 border-top mt-auto">
+                <a asp-action="RegisterOrganization" class="btn btn-outline-primary w-100">Register as Organization</a>
             </div>
         </div>
     </div>
 </div>
 
-<div class="text-center mt-4">
-    <p class="small text-muted">Already have an account? <a asp-action="Login">Log in here</a></p>
+<div class="text-center mt-4 text-muted small">
+    Already have an account? <a asp-action="Login">Log in here</a>
 </div>

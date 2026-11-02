@@ -1,13 +1,20 @@
-/* Simple clean Admin styling */
-.admin-sidebar {
-    min-height: calc(100vh - 56px);
-    background-color: #343a40;
+/* CampusCrew – Clean Admin Console Styles */
+.admin-navbar {
+    background-color: #2b3035;
+    border-bottom: 1px solid #1a1e21;
 }
-.admin-sidebar .nav-link {
-    color: #ced4da;
+
+.admin-navbar .navbar-brand {
+    color: #ffffff !important;
+    font-weight: 700;
 }
-.admin-sidebar .nav-link.active,
-.admin-sidebar .nav-link:hover {
-    color: #fff;
-    background-color: rgba(255, 255, 255, 0.1);
+
+.admin-navbar .nav-link {
+    color: #ced4da !important;
+}
+
+.admin-navbar .nav-link:hover,
+.admin-navbar .nav-link.active {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.08);
 }

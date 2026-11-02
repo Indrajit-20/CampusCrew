@@ -9,120 +9,128 @@
 }
 
 <div class="mb-3">
-    <a asp-controller="Home" asp-action="Opportunities" class="text-decoration-none">&larr; Back to Opportunities</a>
+    <a asp-controller="Home" asp-action="Opportunities">&larr; Back to Opportunities</a>
 </div>
 
 <div class="row g-4">
     <div class="col-lg-8">
-        <div class="card  mb-4">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    @if (Model.OpportunityType == CampusCrew.Models.OpportunityType.Paid)
-                    {
-                        <span class="badge bg-success fs-6"><i class="bi bi-cash-stack me-1"></i>Paid Opportunity</span>
-                    }
-                    else if (Model.OpportunityType == CampusCrew.Models.OpportunityType.Collaboration)
-                    {
-                        <span class="badge bg-primary fs-6"><i class="bi bi-people-fill me-1"></i>Collaboration</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary fs-6"><i class="bi bi-award me-1"></i>Experience</span>
-                    }
+        <div class="content-box p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                <span class="badge @(Model.OpportunityType == CampusCrew.Models.OpportunityType.Paid ? "bg-success" : (Model.OpportunityType == CampusCrew.Models.OpportunityType.Collaboration ? "bg-primary" : "bg-secondary"))">
+                    @Model.OpportunityType
+                </span>
 
-                    @if (isDeadlinePassed)
-                    {
-                        <span class="badge bg-danger">Deadline Passed</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-success">Accepting Applications</span>
-                    }
-                </div>
-
-                <h2 class="card-title fw-bold">@Model.Title</h2>
-                <p class="text-muted">
-                    <i class="bi bi-building me-1"></i><strong>@organizerName</strong> &bull; 
-                    <i class="bi bi-mortarboard me-1"></i>@Model.College &bull; 
-                    <i class="bi bi-geo-alt me-1"></i>@Model.Location
-                </p>
-
-                <hr />
-
-                <h5>Description</h5>
-                <p class="text-secondary" style="white-space: pre-line;">@Model.Description</p>
-
-                <h5 class="mt-4">Required Skills</h5>
-                <div class="d-flex flex-wrap gap-2 mb-4">
-                    @foreach (var skill in Model.OpportunitySkills)
-                    {
-                        <span class="badge bg-primary p-2">@skill.Skill?.Name</span>
-                    }
-                </div>
-
-                @if (!string.IsNullOrWhiteSpace(Model.AdditionalRequirements))
+                @if (isDeadlinePassed)
                 {
-                    <h5>Additional Requirements</h5>
-                    <p class="text-secondary">@Model.AdditionalRequirements</p>
+                    <span class="badge bg-danger">Deadline Passed</span>
+                }
+                else
+                {
+                    <span class="badge bg-success">Accepting Applications</span>
                 }
             </div>
+
+            <h2 class="mb-2">@Model.Title</h2>
+            <div class="text-muted small mb-4 pb-3 border-bottom">
+                <span><strong>Organizer:</strong> @organizerName</span>
+                <span class="mx-2">&bull;</span>
+                <span><strong>Campus:</strong> @Model.College</span>
+                <span class="mx-2">&bull;</span>
+                <span><strong>Location:</strong> @Model.Location</span>
+            </div>
+
+            <h5 class="fw-bold mb-2">Project Description</h5>
+            <div class="text-secondary mb-4" style="white-space: pre-line; line-height: 1.7;">
+                @Model.Description
+            </div>
+
+            <h5 class="fw-bold mb-2">Required Skills</h5>
+            <div class="d-flex flex-wrap gap-1 mb-4">
+                @if (Model.OpportunitySkills.Any())
+                {
+                    @foreach (var skill in Model.OpportunitySkills)
+                    {
+                        <span class="skill-tag">@skill.Skill?.Name</span>
+                    }
+                }
+                else
+                {
+                    <span class="text-muted small">No specific skills listed</span>
+                }
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.AdditionalRequirements))
+            {
+                <h5 class="fw-bold mb-2">Additional Requirements</h5>
+                <p class="text-secondary mb-0">@Model.AdditionalRequirements</p>
+            }
         </div>
     </div>
 
     <div class="col-lg-4">
-        <div class="card  mb-4">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">Opportunity Overview</h5>
+        <div class="content-box">
+            <div class="card-header">
+                Key Information
             </div>
-            <div class="card-body">
-                <ul class="list-group list-group-flush mb-4">
-                    <li class="list-group-item d-flex justify-content-between px-0">
-                        <span class="text-muted"><i class="bi bi-calendar-event me-1"></i>Event Date</span>
-                        <strong>@Model.OpportunityDate.ToString("MMM dd, yyyy")</strong>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between px-0">
-                        <span class="text-muted"><i class="bi bi-clock me-1"></i>Deadline</span>
-                        <strong class="@(isDeadlinePassed ? "text-danger" : "")">@Model.Deadline.ToString("MMM dd, yyyy")</strong>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between px-0">
-                        <span class="text-muted"><i class="bi bi-people me-1"></i>Spots</span>
-                        <strong>@Model.RequiredMembers students</strong>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between px-0">
-                        <span class="text-muted"><i class="bi bi-building me-1"></i>Organizer</span>
-                        <strong>@organizerName</strong>
-                    </li>
-                </ul>
+            <div class="card-body p-3">
+                <table class="table table-sm table-borderless mb-4">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted ps-0">Event Date:</td>
+                            <td class="text-end fw-semibold pe-0">@Model.OpportunityDate.ToString("MMM dd, yyyy")</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted ps-0">Deadline:</td>
+                            <td class="text-end fw-semibold pe-0 @(isDeadlinePassed ? "text-danger" : "")">
+                                @Model.Deadline.ToString("MMM dd, yyyy")
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted ps-0">Positions:</td>
+                            <td class="text-end fw-semibold pe-0">@Model.RequiredMembers student(s)</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted ps-0">Organizer:</td>
+                            <td class="text-end fw-semibold pe-0">@organizerName</td>
+                        </tr>
+                    </tbody>
+                </table>
 
-                <div class="d-grid gap-2">
+                <div>
                     @if (userRole == "Student")
                     {
                         if (hasApplied && existingApp != null)
                         {
-                            <div class="alert alert-info text-center py-2 mb-2">
-                                <small class="d-block text-muted">Your Status:</small>
+                            <div class="alert alert-info py-2 mb-2 text-center">
+                                <div class="small text-muted">Application Status:</div>
                                 <strong>@existingApp.Status</strong>
                             </div>
-                            <a asp-controller="Student" asp-action="MyApplications" class="btn btn-outline-primary">View My Applications</a>
+                            <a asp-controller="Student" asp-action="MyApplications" class="btn btn-outline-primary btn-sm w-100">
+                                View My Applications
+                            </a>
                         }
                         else if (isDeadlinePassed)
                         {
-                            <button class="btn btn-secondary" disabled>Deadline Passed</button>
+                            <button class="btn btn-secondary w-100" disabled>Application Closed</button>
                         }
                         else
                         {
-                            <a asp-controller="Student" asp-action="Apply" asp-route-id="@Model.Id" class="btn btn-primary btn-lg">Apply Now</a>
+                            <a asp-controller="Student" asp-action="Apply" asp-route-id="@Model.Id" class="btn btn-primary w-100">
+                                Apply for this Role
+                            </a>
                         }
                     }
                     else if (userRole == "Organizer")
                     {
-                        <a asp-controller="Organizer" asp-action="Applicants" asp-route-id="@Model.Id" class="btn btn-primary">
-                            <i class="bi bi-people me-1"></i>View Applicants (@Model.Applications.Count)
+                        <a asp-controller="Organizer" asp-action="Applicants" asp-route-id="@Model.Id" class="btn btn-primary w-100">
+                            View Applicants (@Model.Applications.Count)
                         </a>
                     }
                     else
                     {
-                        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Log In as Student to Apply</a>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-primary w-100">
+                            Log in to Apply
+                        </a>
                     }
                 </div>
             </div>

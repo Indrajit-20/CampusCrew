@@ -3,105 +3,98 @@
     ViewData["Title"] = "My Applications";
 }
 
-<div class="row align-items-center mb-4">
-    <div class="col-md-8">
-        <h2><i class="bi bi-file-earmark-check me-2"></i>My Applications</h2>
+<div class="d-flex flex-wrap justify-content-between align-items-center pb-3 mb-3 border-bottom">
+    <div>
+        <h2 class="mb-1">My Applications</h2>
         <p class="text-muted mb-0">Track responses and status of your opportunity submissions.</p>
     </div>
-    <div class="col-md-4 text-md-end mt-3 mt-md-0">
-        <a asp-controller="Home" asp-action="Opportunities" class="btn btn-primary btn-sm">
-            <i class="bi bi-search me-1"></i>Find Gigs
-        </a>
+    <div class="mt-2 mt-md-0">
+        <a asp-controller="Home" asp-action="Opportunities" class="btn btn-outline-primary btn-sm">Find Opportunities</a>
     </div>
 </div>
 
 <!-- Summary counts -->
-<div class="d-flex flex-wrap gap-2 mb-4">
-    <span class="badge bg-secondary p-2">Total: @Model.Applications.Count</span>
-    <span class="badge bg-warning text-dark p-2">Pending: @Model.PendingCount</span>
-    <span class="badge bg-success p-2">Accepted: @Model.AcceptedCount</span>
-    <span class="badge bg-info p-2">Completed: @Model.CompletedCount</span>
-    <span class="badge bg-danger p-2">Rejected: @Model.RejectedCount</span>
+<div class="metric-summary-bar mb-4">
+    <div class="metric-summary-item">
+        <div class="metric-summary-label">Total Submissions</div>
+        <div class="metric-summary-value">@Model.Applications.Count</div>
+    </div>
+    <div class="metric-summary-item">
+        <div class="metric-summary-label">Pending Review</div>
+        <div class="metric-summary-value">@Model.PendingCount</div>
+    </div>
+    <div class="metric-summary-item">
+        <div class="metric-summary-label">Accepted</div>
+        <div class="metric-summary-value">@Model.AcceptedCount</div>
+    </div>
+    <div class="metric-summary-item">
+        <div class="metric-summary-label">Completed</div>
+        <div class="metric-summary-value">@Model.CompletedCount</div>
+    </div>
+    <div class="metric-summary-item">
+        <div class="metric-summary-label">Not Selected</div>
+        <div class="metric-summary-value">@Model.RejectedCount</div>
+    </div>
 </div>
 
 @if (!Model.Applications.Any())
 {
-    <div class="alert alert-info text-center py-4">
-        <h5>No applications yet</h5>
-        <p class="text-muted mb-2">You haven't submitted any applications. Browse opportunities to get started.</p>
+    <div class="content-box text-center py-5 text-muted">
+        <h5 class="mb-2">No applications submitted yet</h5>
+        <p class="small mb-3">Browse open positions and apply to campus projects.</p>
         <a asp-controller="Home" asp-action="Opportunities" class="btn btn-sm btn-primary">Browse Opportunities</a>
     </div>
 }
 else
 {
-    <div class="row g-3">
+    <div class="opportunity-list mb-4">
         @foreach (var app in Model.Applications)
         {
-            <div class="col-12">
-                <div class="card ">
-                    <div class="card-body">
-                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
-                            <div class="flex-grow-1">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <h5 class="card-title mb-0">
-                                        <a asp-action="OpportunityDetails" asp-route-id="@app.OpportunityId" class="text-decoration-none text-dark">
-                                            @app.OpportunityTitle
-                                        </a>
-                                    </h5>
-                                    @if (app.OpportunityType == CampusCrew.Models.OpportunityType.Paid)
-                                    {
-                                        <span class="badge bg-success">Paid</span>
-                                    }
-                                    else if (app.OpportunityType == CampusCrew.Models.OpportunityType.Collaboration)
-                                    {
-                                        <span class="badge bg-primary">Collaboration</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">Unpaid</span>
-                                    }
-                                </div>
-
-                                <p class="text-muted small mb-2">
-                                    <i class="bi bi-building me-1"></i><strong>Organizer:</strong> @app.OrganizerName &bull;
-                                    <i class="bi bi-geo-alt me-1"></i>@app.Location &bull;
-                                    <i class="bi bi-calendar me-1"></i>Date: @app.OpportunityDate.ToString("MMM dd, yyyy") &bull;
-                                    <i class="bi bi-clock me-1"></i>Applied: @app.AppliedOn.ToString("MMM dd, yyyy")
-                                </p>
-
-                                <div class="bg-light p-2 rounded small text-secondary">
-                                    <strong>Your Pitch:</strong> "@app.Message"
-                                </div>
-                            </div>
-
-                            <div class="text-md-end">
-                                <div>
-                                    @if (app.Status == CampusCrew.Models.StatusType.Pending)
-                                    {
-                                        <span class="badge bg-warning text-dark fs-6">Pending</span>
-                                    }
-                                    else if (app.Status == CampusCrew.Models.StatusType.Accepted)
-                                    {
-                                        <span class="badge bg-success fs-6">Accepted</span>
-                                    }
-                                    else if (app.Status == CampusCrew.Models.StatusType.Completed)
-                                    {
-                                        <span class="badge bg-info fs-6">Completed</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-danger fs-6">Rejected</span>
-                                    }
-                                </div>
-
-                                <div class="mt-2">
-                                    <a asp-action="OpportunityDetails" asp-route-id="@app.OpportunityId" class="btn btn-sm btn-outline-primary">
-                                        Details
-                                    </a>
-                                </div>
-                            </div>
+            <div class="opportunity-row">
+                <div class="flex-grow-1">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <div class="opportunity-title mb-0">
+                            <a asp-action="OpportunityDetails" asp-route-id="@app.OpportunityId">
+                                @app.OpportunityTitle
+                            </a>
                         </div>
+                        <span class="badge @(app.OpportunityType == CampusCrew.Models.OpportunityType.Paid ? "bg-success" : (app.OpportunityType == CampusCrew.Models.OpportunityType.Collaboration ? "bg-primary" : "bg-secondary"))">
+                            @app.OpportunityType
+                        </span>
+                        @if (app.Status == CampusCrew.Models.StatusType.Pending)
+                        {
+                            <span class="badge bg-warning">Pending</span>
+                        }
+                        else if (app.Status == CampusCrew.Models.StatusType.Accepted)
+                        {
+                            <span class="badge bg-success">Accepted</span>
+                        }
+                        else if (app.Status == CampusCrew.Models.StatusType.Completed)
+                        {
+                            <span class="badge bg-info">Completed</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Rejected</span>
+                        }
                     </div>
+
+                    <div class="opportunity-meta mb-2">
+                        <span><strong>Organizer:</strong> @app.OrganizerName</span>
+                        <span><strong>Location:</strong> @app.Location</span>
+                        <span><strong>Event Date:</strong> @app.OpportunityDate.ToString("MMM dd, yyyy")</span>
+                        <span><strong>Applied:</strong> @app.AppliedOn.ToString("MMM dd, yyyy")</span>
+                    </div>
+
+                    <div class="p-2 bg-light border rounded-1 small text-secondary">
+                        <strong>Your Note:</strong> "@app.Message"
+                    </div>
+                </div>
+
+                <div class="text-md-end mt-2 mt-md-0 d-flex flex-md-column justify-content-center">
+                    <a asp-action="OpportunityDetails" asp-route-id="@app.OpportunityId" class="btn btn-sm btn-outline-primary text-nowrap">
+                        Details
+                    </a>
                 </div>
             </div>
         }

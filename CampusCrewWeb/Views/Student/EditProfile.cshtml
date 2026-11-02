@@ -6,62 +6,62 @@
 
 <div class="row justify-content-center">
     <div class="col-md-8">
-        <div class="card border my-4">
-            <div class="card-header bg-white border-bottom py-3">
-                <h4 class="mb-0 fw-semibold text-dark"><i class="bi bi-pencil-square me-2 text-primary"></i>Edit Student Profile</h4>
+        <div class="content-box my-4">
+            <div class="card-header">
+                Edit Student Profile
             </div>
             <div class="card-body p-4">
                 <form asp-action="EditProfile" method="post">
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-                    <h5 class="border-bottom pb-2 mb-3 fw-semibold text-dark">1. Personal Info</h5>
+                    <h5 class="section-header pb-2 mb-3">1. Personal Information</h5>
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
-                            <label asp-for="Name" class="form-label fw-semibold">Full Name</label>
+                            <label asp-for="Name" class="form-label">Full Name</label>
                             <input asp-for="Name" class="form-control" />
                             <span asp-validation-for="Name" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
-                            <label asp-for="Location" class="form-label fw-semibold">Location / City</label>
+                            <label asp-for="Location" class="form-label">City / Location</label>
                             <input asp-for="Location" class="form-control" />
                             <span asp-validation-for="Location" class="text-danger small"></span>
                         </div>
                     </div>
 
-                    <h5 class="border-bottom pb-2 mb-3 fw-semibold text-dark">2. Academic Information</h5>
+                    <h5 class="section-header pb-2 mb-3">2. Academic Information</h5>
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
-                            <label asp-for="College" class="form-label fw-semibold">College / University</label>
+                            <label asp-for="College" class="form-label">College / University</label>
                             <input asp-for="College" class="form-control" />
                             <span asp-validation-for="College" class="text-danger small"></span>
                         </div>
                         <div class="col-md-4">
-                            <label asp-for="Course" class="form-label fw-semibold">Course / Degree</label>
+                            <label asp-for="Course" class="form-label">Degree / Course</label>
                             <input asp-for="Course" class="form-control" />
                             <span asp-validation-for="Course" class="text-danger small"></span>
                         </div>
                         <div class="col-md-2">
-                            <label asp-for="Year" class="form-label fw-semibold">Year (1-5)</label>
+                            <label asp-for="Year" class="form-label">Year (1-5)</label>
                             <input asp-for="Year" class="form-control" type="number" min="1" max="5" />
                             <span asp-validation-for="Year" class="text-danger small"></span>
                         </div>
                     </div>
 
-                    <h5 class="border-bottom pb-2 mb-3 fw-semibold text-dark">3. About &amp; Availability</h5>
+                    <h5 class="section-header pb-2 mb-3">3. About &amp; Availability</h5>
                     <div class="row g-3 mb-4">
                         <div class="col-12">
-                            <label asp-for="Bio" class="form-label fw-semibold">Bio / Summary</label>
-                            <textarea asp-for="Bio" class="form-control" rows="3" placeholder="Tell other students and organizers about your background and collaboration interests..."></textarea>
+                            <label asp-for="Bio" class="form-label">Summary / Bio</label>
+                            <textarea asp-for="Bio" class="form-control" rows="3" placeholder="Briefly describe your interests, collaboration goals, and experience..."></textarea>
                             <span asp-validation-for="Bio" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
-                            <label asp-for="Availability" class="form-label fw-semibold">Availability</label>
-                            <input asp-for="Availability" class="form-control" placeholder="e.g. Weekends, Weekday evenings, Flexible" />
+                            <label asp-for="Availability" class="form-label">Availability</label>
+                            <input asp-for="Availability" class="form-control" placeholder="e.g. Weekends, Flexible" />
                             <span asp-validation-for="Availability" class="text-danger small"></span>
                         </div>
                     </div>
 
-                    <h5 class="border-bottom pb-2 mb-3 fw-semibold text-dark">4. Skills</h5>
+                    <h5 class="section-header pb-2 mb-3">4. Skills</h5>
                     <div class="row g-2 mb-4">
                         @foreach (var skill in DbContext.Skills.OrderBy(s => s.Name))
                         {
@@ -69,13 +69,13 @@
                             <div class="col-6 col-md-4">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="SelectedSkills" value="@skill.Name" id="esk_@skill.Name" @(isChecked ? "checked" : "") />
-                                    <label class="form-check-label" for="esk_@skill.Name">@skill.Name</label>
+                                    <label class="form-check-label small" for="esk_@skill.Name">@skill.Name</label>
                                 </div>
                             </div>
                         }
                     </div>
 
-                    <div class="d-flex justify-content-between pt-2">
+                    <div class="pt-3 border-top d-flex justify-content-between align-items-center">
                         <a asp-action="Profile" class="btn btn-outline-secondary">Cancel</a>
                         <button type="submit" class="btn btn-primary px-4">Save Changes</button>
                     </div>

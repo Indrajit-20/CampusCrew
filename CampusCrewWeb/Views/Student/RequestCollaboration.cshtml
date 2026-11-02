@@ -5,14 +5,14 @@
 
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <div class="card  my-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-people me-2"></i>Send Collaboration Request</h5>
+        <div class="content-box my-4">
+            <div class="card-header">
+                Send Collaboration Request
             </div>
             <div class="card-body p-4">
                 <div class="pb-3 mb-3 border-bottom">
                     <h5 class="mb-1 fw-bold">@Model.ReceiverName</h5>
-                    <div class="text-muted small">Skills: @Model.ReceiverSkills</div>
+                    <div class="text-muted small"><strong>Skills:</strong> @Model.ReceiverSkills</div>
                 </div>
 
                 <form asp-action="RequestCollaboration" method="post">
@@ -23,20 +23,20 @@
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small" role="alert"></div>
 
                     <div class="mb-3">
-                        <label asp-for="ProjectTitle" class="form-label fw-bold">Project Title</label>
-                        <input asp-for="ProjectTitle" class="form-control" placeholder="e.g. Hackathon Team, Campus Magazine" />
+                        <label asp-for="ProjectTitle" class="form-label">Project / Collaboration Title</label>
+                        <input asp-for="ProjectTitle" class="form-control" placeholder="e.g. Annual Hackathon Project, App Design" />
                         <span asp-validation-for="ProjectTitle" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Message" class="form-label fw-bold">Message / Pitch</label>
-                        <textarea asp-for="Message" class="form-control" rows="4" placeholder="Explain your idea and what role you'd like to collaborate on..."></textarea>
+                        <label asp-for="Message" class="form-label">Invitation Message</label>
+                        <textarea asp-for="Message" class="form-control" rows="4" placeholder="Briefly describe what you're working on and how you'd like to collaborate..."></textarea>
                         <span asp-validation-for="Message" class="text-danger small"></span>
                     </div>
 
-                    <div class="d-flex justify-content-between pt-2 border-top">
+                    <div class="d-flex justify-content-between pt-3 border-top">
                         <a asp-action="StudentProfile" asp-route-id="@Model.ReceiverId" class="btn btn-outline-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Send Request</button>
+                        <button type="submit" class="btn btn-primary">Send Invitation</button>
                     </div>
                 </form>
             </div>

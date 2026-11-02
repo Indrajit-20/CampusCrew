@@ -7,16 +7,20 @@
 
 <div class="row justify-content-center">
     <div class="col-md-7">
-        <div class="card  my-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-send me-2"></i>Apply for Opportunity</h5>
+        <div class="content-box my-4">
+            <div class="card-header">
+                Opportunity Application
             </div>
             <div class="card-body p-4">
                 @if (opportunity != null)
                 {
-                    <div class="mb-3 p-3 bg-light rounded">
+                    <div class="mb-3 p-3 bg-light border rounded-1">
                         <h5 class="mb-1 fw-bold">@opportunity.Title</h5>
-                        <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>@opportunity.Location &bull; Date: @opportunity.OpportunityDate.ToString("MMM dd, yyyy")</small>
+                        <div class="small text-muted">
+                            <span><strong>Location:</strong> @opportunity.Location</span>
+                            <span class="mx-2">&bull;</span>
+                            <span><strong>Event Date:</strong> @opportunity.OpportunityDate.ToString("MMM dd, yyyy")</span>
+                        </div>
                     </div>
                 }
 
@@ -25,12 +29,12 @@
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
                     <div class="mb-3">
-                        <label asp-for="Message" class="form-label fw-bold">Why are you a good fit for this role?</label>
-                        <textarea asp-for="Message" class="form-control" rows="5" placeholder="Mention relevant experience, past projects, your skills, and why you are excited to contribute..."></textarea>
+                        <label asp-for="Message" class="form-label">Why are you interested in this role?</label>
+                        <textarea asp-for="Message" class="form-control" rows="5" placeholder="Mention relevant coursework, skills, or past projects you have worked on..."></textarea>
                         <span asp-validation-for="Message" class="text-danger small"></span>
                     </div>
 
-                    <div class="d-flex justify-content-between pt-2 border-top">
+                    <div class="d-flex justify-content-between pt-3 border-top">
                         <a class="btn btn-outline-secondary" asp-action="OpportunityDetails" asp-route-id="@Model.OpportunityId">Cancel</a>
                         <button class="btn btn-primary" type="submit">Submit Application</button>
                     </div>

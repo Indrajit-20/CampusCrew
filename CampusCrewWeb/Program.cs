@@ -1,5 +1,4 @@
 using CampusCrew.Data;
-using CampusCrew.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,15 +8,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
     options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-});
-
-// Register Web API HTTP Client
-var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5238";
-if (!apiBaseUrl.EndsWith("/")) apiBaseUrl += "/";
-builder.Services.AddHttpClient<CampusCrewApiClient>(client =>
-{
-    client.BaseAddress = new Uri(apiBaseUrl);
-    client.Timeout = TimeSpan.FromSeconds(10);
 });
 
 builder.Services.AddControllersWithViews();

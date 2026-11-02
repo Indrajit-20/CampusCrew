@@ -15,12 +15,10 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
 
-    <nav class="navbar navbar-expand-lg sticky-top">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" asp-controller="Home" asp-action="Index">
-                <i class="bi bi-mortarboard-fill me-1"></i>CampusCrew
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">CampusCrew</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="mainNavbar">
@@ -69,27 +67,27 @@
                     @if (string.IsNullOrEmpty(displayName))
                     {
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Account" asp-action="Login">Log In</a>
+                            <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
                         </li>
-                        <li class="nav-item ms-2">
-                            <a class="btn btn-primary btn-sm px-3" asp-controller="Account" asp-action="Register">Register</a>
+                        <li class="nav-item ms-lg-2">
+                            <a class="btn btn-primary btn-sm" asp-controller="Account" asp-action="Register">Register</a>
                         </li>
                     }
                     else
                     {
                         @if (role == "Organizer")
                         {
-                            <li class="nav-item me-2">
-                                <a class="btn btn-primary btn-sm" asp-controller="Organizer" asp-action="CreateOpportunity">
+                            <li class="nav-item me-lg-2">
+                                <a class="btn btn-outline-primary btn-sm" asp-controller="Organizer" asp-action="CreateOpportunity">
                                     + Post Opportunity
                                 </a>
                             </li>
                         }
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle me-1"></i>@displayName (@role)
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                @displayName (@role)
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end ">
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 @if (role == "Student")
                                 {
                                     <li><a class="dropdown-item" asp-controller="Student" asp-action="Profile">My Profile</a></li>
@@ -110,8 +108,8 @@
                                 }
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <form asp-controller="Account" asp-action="Logout" method="post">
-                                        <button type="submit" class="dropdown-item text-danger">Log Out</button>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                        <button type="submit" class="dropdown-item text-danger">Logout</button>
                                     </form>
                                 </li>
                             </ul>
@@ -127,12 +125,12 @@
         @RenderBody()
     </main>
 
-    <footer class="py-3 mt-auto">
-        <div class="container d-flex justify-content-between align-items-center small">
-            <span>&copy; @DateTime.UtcNow.Year CampusCrew</span>
+    <footer>
+        <div class="container d-flex flex-wrap justify-content-between align-items-center">
+            <span>&copy; @DateTime.UtcNow.Year CampusCrew &middot; College Collaboration Platform</span>
             <div>
-                <a asp-controller="Home" asp-action="About" class="text-muted text-decoration-none me-3">About</a>
-                <a asp-controller="Admin" asp-action="Login" class="text-muted text-decoration-none">Admin</a>
+                <a asp-controller="Home" asp-action="About" class="me-3">About</a>
+                <a asp-controller="Admin" asp-action="Login">Admin Portal</a>
             </div>
         </div>
     </footer>

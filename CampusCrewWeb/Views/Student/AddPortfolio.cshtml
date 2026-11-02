@@ -6,9 +6,9 @@
 
 <div class="row justify-content-center">
     <div class="col-md-7">
-        <div class="card  my-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add Portfolio Project</h5>
+        <div class="content-box my-4">
+            <div class="card-header">
+                Add Project to Portfolio
             </div>
             <div class="card-body p-4">
                 <form asp-action="AddPortfolio" method="post">
@@ -17,11 +17,11 @@
                     <div class="row g-3">
                         <div class="col-md-8">
                             <label asp-for="ProjectTitle" class="form-label">Project Title</label>
-                            <input asp-for="ProjectTitle" class="form-control" placeholder="e.g. Annual Fest Photography" />
+                            <input asp-for="ProjectTitle" class="form-control" placeholder="e.g. Campus Festival Website" />
                             <span asp-validation-for="ProjectTitle" class="text-danger small"></span>
                         </div>
                         <div class="col-md-4">
-                            <label asp-for="SkillName" class="form-label">Skill</label>
+                            <label asp-for="SkillName" class="form-label">Skill / Category</label>
                             <select asp-for="SkillName" class="form-select">
                                 <option value="">Select a skill</option>
                                 @foreach (var skill in DbContext.Skills.OrderBy(s => s.Name))
@@ -32,28 +32,28 @@
                             <span asp-validation-for="SkillName" class="text-danger small"></span>
                         </div>
                         <div class="col-12">
-                            <label asp-for="Description" class="form-label">Description</label>
-                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Describe what you worked on, tools used, outcomes..."></textarea>
+                            <label asp-for="Description" class="form-label">Project Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Describe the problem, tools used, and what you contributed..."></textarea>
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
-                            <label asp-for="ImageUrl" class="form-label">Image URL</label>
+                            <label asp-for="ImageUrl" class="form-label">Image URL (Optional)</label>
                             <input asp-for="ImageUrl" class="form-control" placeholder="https://..." />
                             <span asp-validation-for="ImageUrl" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
-                            <label asp-for="ExternalLink" class="form-label">External Link (GitHub, Demo, etc.)</label>
-                            <input asp-for="ExternalLink" class="form-control" placeholder="https://..." />
+                            <label asp-for="ExternalLink" class="form-label">Project URL / GitHub (Optional)</label>
+                            <input asp-for="ExternalLink" class="form-control" placeholder="https://github.com/..." />
                             <span asp-validation-for="ExternalLink" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
-                            <label asp-for="ProjectDate" class="form-label">Project Date</label>
+                            <label asp-for="ProjectDate" class="form-label">Date Completed</label>
                             <input asp-for="ProjectDate" class="form-control" type="date" />
                             <span asp-validation-for="ProjectDate" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
                             <label asp-for="Role" class="form-label">Your Role</label>
-                            <input asp-for="Role" class="form-control" placeholder="Lead Photographer, Full-stack Dev" />
+                            <input asp-for="Role" class="form-control" placeholder="e.g. Lead Developer, Graphic Designer" />
                             <span asp-validation-for="Role" class="text-danger small"></span>
                         </div>
                     </div>
